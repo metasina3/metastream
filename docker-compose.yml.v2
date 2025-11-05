@@ -1,0 +1,250 @@
+services:
+  # ==========================================
+  # Database
+  # ==========================================
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: metastream
+      POSTGRES_USER: metasina3
+      POSTGRES_PASSWORD: Assassinevil0
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - metastream
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+
+  # ==========================================
+  # Redis
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+    restart: unless-stopped
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru --save 900 1 --save 300 10 --save 60 10000
+    networks:
+      - metastream
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # ==========================================
+  # FastAPI Web Server
+  # ==========================================
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    volumes:
+      - ./app:/app/app
+      - ./app/media:/app/app/media
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - metastream
+    deploy:
+      resources:
+        limits:
+          cpus: '6.0'
+          memory: 2G
+        reservations:
+          cpus: '2.0'
+          memory: 512M
+
+  # ==========================================
+  # Video Processing Worker (Pre-built)
+  # ==========================================
+  prep_worker:
+    # Using pre-built image (from Docker Hub or local)
+    image: metastream/prep-worker:stable  # Build this once: docker build -t metastream/prep-worker:stable -f Dockerfile.prep .
+    env_file: .env
+    command: ["celery", "-A", "app.core.celery_app.celery", "worker", "-Q", "prep", "--concurrency=6", "-Ofair", "--loglevel=info"]
+    volumes:
+      - ./app:/app/app
+      - ./app/media:/app/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - metastream
+    deploy:
+      resources:
+        limits:
+          cpus: '6.0'
+          memory: 1.5G
+        reservations:
+          cpus: '2.0'
+          memory: 512M
+
+  # ==========================================
+  # Streaming Worker (Pre-built)
+  # ==========================================
+  stream_worker:
+    # Using pre-built image
+    image: metastream/stream-worker:stable  # Build this once: docker build -t metastream/stream-worker:stable -f Dockerfile.stream .
+    env_file: .env
+    command: ["celery", "-A", "app.core.celery_app.celery", "worker", "-Q", "stream,default", "--concurrency=6", "-Ofair", "--loglevel=info"]
+    volumes:
+      - ./app:/app/app
+      - ./app/media:/app/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - metastream
+    deploy:
+      resources:
+        limits:
+          cpus: '6.0'
+          memory: 1.5G
+        reservations:
+          cpus: '2.0'
+          memory: 512M
+
+  # ==========================================
+  # Celery Beat Scheduler
+  # ==========================================
+  beat:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    command: ["celery", "-A", "app.core.celery_app.celery", "beat", "-l", "info"]
+    volumes:
+      - ./app:/app/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - metastream
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 128M
+
+  # ==========================================
+  # Celery Flower (Monitoring)
+  # ==========================================
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    command: ["celery", "-A", "app.core.celery_app.celery", "flower", "--address=0.0.0.0", "--port=5555"]
+    volumes:
+      - ./app:/app/app
+      - ./app/media:/app/app/media
+    ports:
+      - "127.0.0.1:5555:5555"
+    depends_on:
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - metastream
+
+  # ==========================================
+  # Go Microservice (Comment Polling)
+  # ==========================================
+  go-service:
+    build:
+      context: ./go-service
+      dockerfile: Dockerfile
+    env_file: .env
+    ports:
+      - "127.0.0.1:9000:9000"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - metastream
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 128M
+
+  # ==========================================
+  # Tailwind CSS Watcher
+  # ==========================================
+  tailwind:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - tailwind_node_modules:/app/node_modules
+    command: sh -c "npm install && npm run tw:watch"
+    networks:
+      - metastream
+
+  # ==========================================
+  # Assets Builder
+  # ==========================================
+  assets:
+    build:
+      context: .
+      dockerfile: Dockerfile.assets
+    working_dir: /workspace
+    environment:
+      - CHOKIDAR_USEPOLLING=1
+      - CHOKIDAR_INTERVAL=800
+    volumes:
+      - .:/workspace
+    restart: unless-stopped
+    networks:
+      - metastream
+
+networks:
+  metastream:
+    driver: bridge
+
+volumes:
+  pgdata:
+  tailwind_node_modules:
+

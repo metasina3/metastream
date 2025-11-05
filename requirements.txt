@@ -1,0 +1,53 @@
+# FastAPI
+fastapi==0.115.0
+uvicorn==0.30.6
+gunicorn==21.2.0
+starlette==0.37.2
+
+# Database
+SQLAlchemy==2.0.36
+alembic==1.13.3
+psycopg2-binary==2.9.9
+
+# Security
+passlib==1.7.4
+bcrypt==3.2.2
+python-jose[cryptography]==3.3.0
+itsdangerous==2.2.0
+
+# Celery
+celery[redis]==5.4.0
+
+# Redis
+redis==5.0.8
+
+# HTTP & Utilities
+requests==2.32.3
+python-dotenv==1.0.1
+python-multipart==0.0.9
+aiofiles==23.2.1
+
+# Serialization
+pydantic==2.9.2
+
+# Date/Time
+pytz==2024.1
+python-dateutil==2.9.0
+
+# Excel Export
+openpyxl==3.1.5
+xlsxwriter==3.2.0
+
+# Telegram Bot
+python-telegram-bot==21.6
+
+# Flower (Celery Monitoring)
+flower==2.0.1
+
+# Testing
+pytest==8.3.3
+pytest-asyncio==0.24.0
+
+# Development
+black==24.4.2
+flake8==7.0.0
