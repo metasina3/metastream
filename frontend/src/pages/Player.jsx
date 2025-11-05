@@ -692,7 +692,7 @@ export default function Player() {
 
           {/* Center: Logo and Channel Owner */}
           <div className="flex items-center gap-3">
-            <a href="https://metastream.ir" className="flex items-center gap-2">
+            <a href={import.meta.env.VITE_MAIN_URL || '#'} className="flex items-center gap-2">
               <img src="/logo.png" alt="Meta Stream" className="w-8 h-8" />
             </a>
             {channelOwner && (
