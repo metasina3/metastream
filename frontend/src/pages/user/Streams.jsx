@@ -68,7 +68,7 @@ export default function Streams() {
     const liveStreams = streams.filter(s => s.status === 'live')
     if (liveStreams.length === 0) return
 
-    const goServiceUrl = import.meta.env.VITE_GO_SERVICE_URL || ''
+    const goServiceUrl = import.meta.env.VITE_API_URL || ''
     const counts = {}
 
     await Promise.all(
@@ -141,23 +141,25 @@ export default function Streams() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">مدیریت استریم‌ها</h1>
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold">مدیریت استریم‌ها</h1>
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <button
             onClick={loadStreams}
-            className="btn-secondary flex items-center gap-2"
+            className="btn-secondary flex items-center gap-2 text-sm px-3 py-2 flex-1 sm:flex-initial"
             disabled={loading}
           >
-            <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-            بروزرسانی
+            <ArrowPathIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">بروزرسانی</span>
+            <span className="sm:hidden">بروز</span>
           </button>
           <button
             onClick={() => setShowModal(true)}
-            className="btn-primary flex items-center gap-2"
+            className="btn-primary flex items-center gap-2 text-sm px-3 py-2 flex-1 sm:flex-initial"
           >
-            <PlusIcon className="w-5 h-5" />
-            ایجاد استریم
+            <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">ایجاد استریم</span>
+            <span className="sm:hidden">ایجاد</span>
           </button>
         </div>
       </div>
@@ -168,14 +170,14 @@ export default function Streams() {
         ) : streams.length > 0 ? (
           <div className="space-y-4">
             {streams.map((stream) => (
-              <div key={stream.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold mb-1">{stream.title}</h3>
+              <div key={stream.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-3">
+                  <div className="flex-1 w-full">
+                    <h3 className="text-base sm:text-lg font-bold mb-1">{stream.title}</h3>
                     {stream.caption && (
-                      <p className="text-sm text-gray-600 mb-2">{stream.caption}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">{stream.caption}</p>
                     )}
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                    <div className="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                       <span className="flex items-center gap-1">
                         <CalendarIcon className="w-4 h-4" />
                         {formatDate(stream.start_time)}
@@ -215,89 +217,97 @@ export default function Streams() {
                   {getStatusBadge(stream.status, stream.error_message)}
                 </div>
 
-                <div className="flex gap-2 mt-3 pt-3 border-t">
-                  <input
-                    type="text"
-                    value={stream.play_link}
-                    readOnly
-                    className="flex-1 px-3 py-2 border rounded text-sm bg-gray-50"
-                    dir="ltr"
-                  />
-                  <button
-                    onClick={() => copyToClipboard(stream.play_link)}
-                    className="btn-secondary text-sm"
-                    title="کپی لینک"
-                  >
-                    📋 کپی
-                  </button>
-                  <button
-                    onClick={() => window.open(stream.play_link, '_blank')}
-                    className="btn-primary text-sm"
-                    title="باز کردن"
-                  >
-                    🔗 باز کردن
-                  </button>
-                  {/* Cancel button for scheduled and live streams */}
-                  {(stream.status === 'scheduled' || stream.status === 'live') && (
+                <div className="flex flex-col sm:flex-row gap-2 mt-3 pt-3 border-t">
+                  <div className="flex gap-2 flex-1">
+                    <input
+                      type="text"
+                      value={stream.play_link}
+                      readOnly
+                      className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 border rounded text-xs sm:text-sm bg-gray-50 min-w-0"
+                      dir="ltr"
+                    />
                     <button
-                      onClick={async () => {
-                        if (confirm('آیا مطمئن هستید که می‌خواهید این استریم را لغو کنید؟')) {
+                      onClick={() => copyToClipboard(stream.play_link)}
+                      className="btn-secondary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 flex-shrink-0"
+                      title="کپی لینک"
+                    >
+                      <span className="hidden sm:inline">📋 کپی</span>
+                      <span className="sm:hidden">📋</span>
+                    </button>
+                    <button
+                      onClick={() => window.open(stream.play_link, '_blank')}
+                      className="btn-primary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 flex-shrink-0"
+                      title="باز کردن"
+                    >
+                      <span className="hidden sm:inline">🔗 باز کردن</span>
+                      <span className="sm:hidden">🔗</span>
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {/* Cancel button for scheduled and live streams */}
+                    {(stream.status === 'scheduled' || stream.status === 'live') && (
+                      <button
+                        onClick={async () => {
+                          if (confirm('آیا مطمئن هستید که می‌خواهید این استریم را لغو کنید؟')) {
+                            try {
+                              await dashboardAPI.cancelStream(stream.id)
+                              await loadStreams()
+                              alert('استریم با موفقیت لغو شد')
+                            } catch (error) {
+                              const detail = error.response?.data?.detail || 'خطا در لغو استریم'
+                              alert(typeof detail === 'string' ? detail : JSON.stringify(detail))
+                            }
+                          }
+                        }}
+                        className="btn-secondary text-xs sm:text-sm bg-red-50 text-red-700 hover:bg-red-100 px-2 sm:px-3 py-1.5 sm:py-2"
+                        title="لغو استریم"
+                      >
+                        ❌ لغو
+                      </button>
+                    )}
+                    {/* Manage Comments - For all streams (scheduled, live, ended) */}
+                    {['scheduled', 'live', 'ended'].includes(stream.status) && (
+                      <button
+                        onClick={() => navigate(`/dashboard/moderation?stream=${stream.id}`)}
+                        className="btn-primary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                        title="مدیریت کامنت‌ها"
+                      >
+                        <span className="hidden sm:inline">💬 مدیریت</span>
+                        <span className="sm:hidden">💬</span>
+                      </button>
+                    )}
+                    
+                    {/* Toggle Comments - For scheduled, live, ended */}
+                    {['scheduled', 'live', 'ended'].includes(stream.status) && (
+                      <button
+                        onClick={async () => {
                           try {
-                            await dashboardAPI.cancelStream(stream.id)
-                            await loadStreams()
-                            alert('استریم با موفقیت لغو شد')
-                          } catch (error) {
-                            const detail = error.response?.data?.detail || 'خطا در لغو استریم'
-                            alert(typeof detail === 'string' ? detail : JSON.stringify(detail))
-                          }
-                        }
-                      }}
-                      className="btn-secondary text-sm bg-red-50 text-red-700 hover:bg-red-100"
-                      title="لغو استریم"
-                    >
-                      ❌ لغو
-                    </button>
-                  )}
-                  {/* Manage Comments - For all streams (scheduled, live, ended) */}
-                  {['scheduled', 'live', 'ended'].includes(stream.status) && (
-                    <button
-                      onClick={() => navigate(`/dashboard/moderation?stream=${stream.id}`)}
-                      className="btn-primary text-sm"
-                      title="مدیریت کامنت‌ها"
-                    >
-                      💬 مدیریت
-                    </button>
-                  )}
-                  
-                  {/* Toggle Comments - For scheduled, live, ended */}
-                  {['scheduled', 'live', 'ended'].includes(stream.status) && (
-                    <button
-                      onClick={async () => {
-                        try {
-                          await dashboardAPI.toggleComments(stream.id, !stream.allow_comments)
-                          // Silent refresh to update UI without showing error
-                          await loadStreams(false)
-                        } catch (error) {
-                          // Only show error if it's a real error (not success)
-                          const errorDetail = error.response?.data?.detail
-                          if (errorDetail && !errorDetail.includes('success')) {
-                            alert(errorDetail || 'خطا در تغییر وضعیت کامنت')
-                          } else {
-                            // Success - just refresh silently
+                            await dashboardAPI.toggleComments(stream.id, !stream.allow_comments)
+                            // Silent refresh to update UI without showing error
                             await loadStreams(false)
+                          } catch (error) {
+                            // Only show error if it's a real error (not success)
+                            const errorDetail = error.response?.data?.detail
+                            if (errorDetail && !errorDetail.includes('success')) {
+                              alert(errorDetail || 'خطا در تغییر وضعیت کامنت')
+                            } else {
+                              // Success - just refresh silently
+                              await loadStreams(false)
+                            }
                           }
-                        }
-                      }}
-                      className={`btn-secondary text-sm ${
-                        stream.allow_comments 
-                          ? 'bg-green-50 text-green-700' 
-                          : 'bg-gray-50 text-gray-700'
-                      }`}
-                      title={stream.allow_comments ? 'غیرفعال کردن کامنت' : 'فعال کردن کامنت'}
-                    >
-                      {stream.allow_comments ? '✅ کامنت' : '❌ کامنت'}
-                    </button>
-                  )}
+                        }}
+                        className={`btn-secondary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 ${
+                          stream.allow_comments 
+                            ? 'bg-green-50 text-green-700' 
+                            : 'bg-gray-50 text-gray-700'
+                        }`}
+                        title={stream.allow_comments ? 'غیرفعال کردن کامنت' : 'فعال کردن کامنت'}
+                      >
+                        {stream.allow_comments ? '✅' : '❌'}
+                        <span className="hidden sm:inline ml-1">کامنت</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {stream.video && (

@@ -325,7 +325,7 @@ export default function Player() {
     
     try {
       // Call Go service heartbeat endpoint
-      const goServiceUrl = import.meta.env.VITE_GO_SERVICE_URL || ''
+      const goServiceUrl = import.meta.env.VITE_API_URL || ''
       console.log('[Player] Sending heartbeat for stream:', streamId, 'viewer:', viewerIdRef.current)
       await axios.post(`${goServiceUrl}/heartbeat`, {
         stream_id: streamId,
@@ -343,7 +343,7 @@ export default function Player() {
     }
     
     try {
-      const goServiceUrl = import.meta.env.VITE_GO_SERVICE_URL || ''
+      const goServiceUrl = import.meta.env.VITE_API_URL || ''
       console.log('[Player] Polling updates for stream:', streamId, 'last_id:', lastCommentId)
       const response = await axios.post(`${goServiceUrl}/check-update`, {
         stream_id: streamId,
@@ -651,22 +651,30 @@ export default function Player() {
               </button>
               
               {showMenu && (
-                <div className={`absolute left-0 mt-2 w-48 rounded-lg shadow-lg z-50 ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-right px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-                  >
-                    <XMarkIcon className="w-4 h-4" />
-                    خروج
-                  </button>
-                  <button
-                    onClick={toggleDarkMode}
-                    className="w-full text-right px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-                  >
-                    {darkMode ? <SunIcon className="w-4 h-4" /> : <MoonIcon className="w-4 h-4" />}
-                    {darkMode ? 'حالت روشن' : 'حالت تاریک'}
-                  </button>
-                </div>
+                <>
+                  {/* Overlay */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowMenu(false)}
+                  />
+                  {/* Menu */}
+                  <div className={`absolute right-0 top-full mt-2 w-48 rounded-lg shadow-lg z-50 ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-right px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                      <XMarkIcon className="w-4 h-4" />
+                      خروج
+                    </button>
+                    <button
+                      onClick={toggleDarkMode}
+                      className="w-full text-right px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                      {darkMode ? <SunIcon className="w-4 h-4" /> : <MoonIcon className="w-4 h-4" />}
+                      {darkMode ? 'حالت روشن' : 'حالت تاریک'}
+                    </button>
+                  </div>
+                </>
               )}
             </div>
             
@@ -907,9 +915,10 @@ function CommentsSection({ stream, viewer, comments, newComment, setNewComment, 
     }
   }, [viewer])
 
-  useEffect(() => {
-    commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [comments])
+  // Auto-scroll disabled to prevent page scroll on mobile
+  // useEffect(() => {
+  //   commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  // }, [comments])
 
   if (!stream) return null
 
@@ -952,7 +961,15 @@ function CommentsSection({ stream, viewer, comments, newComment, setNewComment, 
                         : 'bg-gray-100 text-gray-900'
                     }`}
                   >
-                    <p className="font-medium text-sm mb-1">{comment.username}</p>
+                    <p className={`font-medium text-sm mb-1 ${
+                      comment.isOwn
+                        ? darkMode
+                          ? 'text-primary-200'
+                          : 'text-primary-700'
+                        : darkMode
+                        ? 'text-blue-300'
+                        : 'text-blue-600'
+                    }`}>{comment.username}</p>
                     <p className="text-sm">{comment.message}</p>
                     <p className="text-xs opacity-70 mt-1">
                       {new Date(comment.timestamp).toLocaleTimeString('fa-IR')}

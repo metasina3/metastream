@@ -267,15 +267,15 @@ export default function AdminModeration() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">مدیریت نظرات</h1>
-        <div className="flex items-center gap-4 text-sm text-gray-500">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">مدیریت نظرات</h1>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
           <span>استریم ID: {streamId}</span>
-          <span>•</span>
+          <span className="hidden sm:inline">•</span>
           <span>تعداد کامنت‌ها: {comments.length}</span>
-          <span>•</span>
-          <span className="text-yellow-600">⚠️ هر کامنت بعد از 15 ثانیه خودکار حذف می‌شود</span>
+          <span className="hidden sm:inline">•</span>
+          <span className="text-yellow-600 text-xs sm:text-sm">⚠️ هر کامنت بعد از 15 ثانیه خودکار حذف می‌شود</span>
         </div>
       </div>
       
@@ -304,35 +304,35 @@ export default function AdminModeration() {
               return (
                 <div 
                   key={comment.id} 
-                  className="flex items-center gap-4 p-3 hover:bg-gray-50 transition-colors"
+                  className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 p-2 sm:p-3 hover:bg-gray-50 transition-colors"
                 >
                   {/* Row Number */}
-                  <div className="flex-shrink-0 w-12 text-center">
-                    <span className="text-sm font-mono text-gray-500">{index + 1}</span>
+                  <div className="flex-shrink-0 w-8 sm:w-12 text-center">
+                    <span className="text-xs sm:text-sm font-mono text-gray-500">{index + 1}</span>
                   </div>
                   
                   {/* Username */}
-                  <div className="flex-shrink-0 w-32">
-                    <span className="text-sm font-medium text-gray-900 truncate block">
+                  <div className="flex-shrink-0 w-full sm:w-32">
+                    <span className="text-xs sm:text-sm font-medium text-gray-900 truncate block">
                       {comment.username}
                     </span>
                   </div>
                   
                   {/* Phone */}
-                  <div className="flex-shrink-0 w-32">
+                  <div className="flex-shrink-0 w-full sm:w-32">
                     <span className="text-xs text-gray-500 font-mono">{comment.phone}</span>
                   </div>
                   
                   {/* Message */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-800 truncate">{comment.message}</p>
+                  <div className="flex-1 min-w-0 w-full sm:w-auto">
+                    <p className="text-xs sm:text-sm text-gray-800 break-words sm:truncate">{comment.message}</p>
                   </div>
                   
                   {/* Delete Button - Always visible, right after message */}
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 w-full sm:w-auto">
                     <button
                       onClick={() => handleDelete(comment.id)}
-                      className="px-3 py-1 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 transition-colors"
+                      className="w-full sm:w-auto px-2 sm:px-3 py-1 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 transition-colors"
                       title="حذف فوری"
                     >
                       حذف

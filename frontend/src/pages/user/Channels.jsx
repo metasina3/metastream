@@ -66,14 +66,15 @@ export default function UserChannels() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">مدیریت کانال‌ها</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold">مدیریت کانال‌ها</h1>
         <button
           onClick={() => setShowModal(true)}
-          className="btn-primary flex items-center gap-2"
+          className="btn-primary flex items-center gap-2 text-sm px-3 py-2 w-full sm:w-auto"
         >
-          <PlusIcon className="w-5 h-5" />
-          کانال جدید
+          <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="hidden sm:inline">کانال جدید</span>
+          <span className="sm:hidden">کانال جدید</span>
         </button>
       </div>
 
@@ -83,11 +84,11 @@ export default function UserChannels() {
         ) : channels.length > 0 ? (
           <div className="space-y-4">
             {channels.map((channel) => (
-              <div key={channel.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-2">{channel.name}</h3>
-                    <div className="space-y-1 text-sm text-gray-600 mb-2">
+              <div key={channel.id} className="border rounded-lg p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+                  <div className="flex-1 w-full">
+                    <h3 className="font-semibold text-base sm:text-lg mb-2">{channel.name}</h3>
+                    <div className="space-y-1 text-xs sm:text-sm text-gray-600 mb-2">
                       {channel.aparat_username && (
                         <p>
                           📺 آپارات: <a 

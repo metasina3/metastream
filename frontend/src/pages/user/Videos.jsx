@@ -172,23 +172,25 @@ export default function UserVideos() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">مدیریت ویدیوها</h1>
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold">مدیریت ویدیوها</h1>
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <button
             onClick={loadVideos}
-            className="btn-secondary flex items-center gap-2"
+            className="btn-secondary flex items-center gap-2 text-sm px-3 py-2 flex-1 sm:flex-initial"
             disabled={loading}
           >
-            <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-            بروزرسانی
+            <ArrowPathIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">بروزرسانی</span>
+            <span className="sm:hidden">بروز</span>
           </button>
           <button
             onClick={() => setShowModal(true)}
-            className="btn-primary flex items-center gap-2"
+            className="btn-primary flex items-center gap-2 text-sm px-3 py-2 flex-1 sm:flex-initial"
           >
-            <PlusIcon className="w-5 h-5" />
-            آپلود ویدیو
+            <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">آپلود ویدیو</span>
+            <span className="sm:hidden">آپلود</span>
           </button>
         </div>
       </div>
@@ -211,11 +213,11 @@ export default function UserVideos() {
               }
               
               return (
-                <div key={video.id} className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-2">{video.title || 'بدون عنوان'}</h3>
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-2">
+                <div key={video.id} className="border rounded-lg p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+                    <div className="flex-1 w-full">
+                      <h3 className="font-semibold text-base sm:text-lg mb-2">{video.title || 'بدون عنوان'}</h3>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2">
                         <span className="flex items-center gap-1">
                           <span>⏱️</span>
                           <span>مدت زمان: <strong>{formatDuration(video.duration)}</strong></span>
@@ -255,14 +257,15 @@ export default function UserVideos() {
                          video.status === 'rejected' ? 'رد شده' : video.status}
                       </span>
                     </div>
-                    <div className="flex gap-2 items-center">
+                    <div className="flex flex-wrap gap-2 items-center mt-2 sm:mt-0">
                       {(video.processed_file || video.original_file) && (
                         <button
                           onClick={() => setPlayingVideo(video)}
-                          className="btn-secondary text-sm"
+                          className="btn-secondary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
                           title="پخش ویدیو"
                         >
-                          ▶️ پخش
+                          <span className="hidden sm:inline">▶️ پخش</span>
+                          <span className="sm:hidden">▶️</span>
                         </button>
                       )}
                       {video.status === 'ready' && (
@@ -275,18 +278,19 @@ export default function UserVideos() {
                               }
                             })
                           }}
-                          className="btn-primary text-sm"
+                          className="btn-primary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
                           title="استفاده برای استریم"
                         >
-                          📡 استریم
+                          <span className="hidden sm:inline">📡 استریم</span>
+                          <span className="sm:hidden">📡</span>
                         </button>
                       )}
                       <button
                         onClick={() => handleDeleteVideo(video.id)}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 p-1.5 sm:p-2"
                         title="حذف ویدیو"
                       >
-                        <TrashIcon className="w-5 h-5" />
+                        <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     </div>
                   </div>
