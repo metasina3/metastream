@@ -1,0 +1,39 @@
+FROM python:3.11-slim
+
+# ==========================================
+# Install FFmpeg & Streaming Dependencies
+# ==========================================
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    gcc \
+    libpq-dev \
+    nginx \
+    && rm -rf /var/lib/apt/lists/*
+
+# ==========================================
+# Setup Python Environment
+# ==========================================
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+# ==========================================
+# Install Dependencies
+# ==========================================
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# ==========================================
+# Copy Application
+# ==========================================
+COPY app ./app
+COPY alembic.ini ./alembic.ini
+COPY migrations ./migrations
+
+# ==========================================
+# Default Command (Celery Stream Worker)
+# ==========================================
+CMD ["celery", "-A", "app.core.celery_app.celery", "worker", "-Q", "stream,default", "--concurrency=6", "-Ofair", "--loglevel=info"]
+

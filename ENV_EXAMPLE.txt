@@ -1,0 +1,28 @@
+# ==================== Streaming Proxy Configuration ====================
+# پروکسی برای استریم (اختیاری)
+# اگر خالی باشد، بدون پروکسی استریم می‌کند
+
+# فرمت‌های پشتیبانی شده:
+# - HTTP Proxy:    STREAM_PROXY=http://proxy:port
+# - HTTPS Proxy:   STREAM_PROXY=https://proxy:port
+# - SOCKS5 Proxy:  STREAM_PROXY=socks5://proxy:port
+# - با احراز هویت: STREAM_PROXY=http://user:pass@proxy:port
+
+# مثال‌ها:
+# STREAM_PROXY=http://192.168.1.100:8080
+# STREAM_PROXY=socks5://myuser:mypass@myproxy.com:1080
+# STREAM_PROXY=http://10.0.0.50:3128
+
+# بدون پروکسی (خالی بگذارید):
+STREAM_PROXY=
+
+# ==================== نکات مهم ====================
+# ✅ پروکسی باید سریع و پایدار باشد
+# ✅ Upload speed بالا داشته باشد
+# ⚠️ latency را تست کنید
+# ⚠️ از پروکسی عمومی/رایگان استفاده نکنید
+
+# بعد از تغییر این فایل:
+# cd /root/metastream
+# docker compose restart web stream_worker prep_worker
+
