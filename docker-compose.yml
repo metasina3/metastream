@@ -1,0 +1,209 @@
+services:
+  # ==========================================
+  # Database
+  # ==========================================
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - ./data/pgdata:/var/lib/postgresql/data  # Database outside container
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - metastream
+
+  # ==========================================
+  # Redis
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+    restart: unless-stopped
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru --save 900 1 --save 300 10 --save 60 10000
+    networks:
+      - metastream
+
+  # ==========================================
+  # FastAPI Web Server
+  # ==========================================
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - ./app:/app/app:ro  # Code mounted as read-only
+      - ./data/media:/app/media  # Media files outside container (separate path)
+      - ./data/uploads:/app/uploads  # Upload directory (separate path)
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - metastream
+
+  # ==========================================
+  # Video Processing Worker (Pre-built)
+  # ==========================================
+  prep_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    working_dir: /app/app
+    environment:
+      - PYTHONPATH=/app
+    command: ["celery", "-A", "app.core.celery_app:celery_app", "worker", "-Q", "prep", "--concurrency=6", "-Ofair", "--loglevel=info"]
+    volumes:
+      - ./app:/app/app:ro  # Code mounted as read-only
+      - ./data/media:/app/media  # Media files outside container (separate path)
+      - ./data/uploads:/app/uploads  # Upload directory (separate path)
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - metastream
+
+  # ==========================================
+  # Streaming Worker (Pre-built)
+  # ==========================================
+  stream_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    working_dir: /app/app
+    environment:
+      - PYTHONPATH=/app
+    command: ["celery", "-A", "app.core.celery_app:celery_app", "worker", "-Q", "stream,default", "--concurrency=6", "-Ofair", "--loglevel=info"]
+    volumes:
+      - ./app:/app/app:ro  # Code mounted as read-only
+      - ./data/media:/app/media  # Media files outside container (separate path)
+      - ./data/uploads:/app/uploads  # Upload directory (separate path)
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - metastream
+
+  # ==========================================
+  # Celery Beat Scheduler
+  # ==========================================
+  beat:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    working_dir: /app/app
+    environment:
+      - PYTHONPATH=/app
+    command: ["celery", "-A", "app.core.celery_app:celery_app", "beat", "-l", "info", "--schedule", "/app/uploads/celerybeat-schedule"]
+    volumes:
+      - ./app:/app/app:ro
+      - ./data/uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - metastream
+
+  # ==========================================
+  # Celery Flower (Monitoring)
+  # ==========================================
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    working_dir: /app/app
+    environment:
+      - PYTHONPATH=/app
+    command: ["celery", "-A", "app.core.celery_app:celery_app", "flower", "--address=0.0.0.0", "--port=5555"]
+    volumes:
+      - ./app:/app/app:ro
+      - ./data/media:/app/media  # Separate path to avoid read-only conflict
+    ports:
+      - "127.0.0.1:5555:5555"
+    depends_on:
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - metastream
+
+  # ==========================================
+  # Go Microservice (Comment Polling)
+  # ==========================================
+  go-service:
+    build:
+      context: ./go-service
+      dockerfile: Dockerfile
+    env_file: .env
+    ports:
+      - "127.0.0.1:9000:9000"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - metastream
+
+  # ==========================================
+  # Frontend (React + Vite build served via serve)
+  # ==========================================
+  frontend:
+    image: node:18-alpine
+    working_dir: /app/frontend
+    env_file: .env
+    environment:
+      - VITE_API_URL=${API_URL}
+      - VITE_MAIN_URL=${MAIN_URL}
+    volumes:
+      - ./frontend:/app/frontend
+    command: ["sh", "-lc", "if [ -f package-lock.json ]; then npm ci; else npm install; fi; npm run build; npx --yes serve -s dist -l 5173"]
+    ports:
+      - "127.0.0.1:5173:5173"
+    depends_on:
+      web:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - metastream
+
+  # ==========================================
+  # Note: Tailwind and Assets services removed
+  # Frontend should be built and served separately
+  # ==========================================
+
+networks:
+  metastream:
+    driver: bridge
+
+
