@@ -503,76 +503,224 @@ async def startup():
         except:
             pass
     # Ensure admin user exists based on env
+    # Use advisory lock to prevent race condition when multiple workers start
+    db = None
     try:
         db = SessionLocal()
+        from sqlalchemy import text
         from app.core.config import settings as _settings
+        
         admin_email = _settings.ADMIN_EMAIL
         admin_password = _settings.ADMIN_PASSWORD
         admin_phone = _settings.ADMIN_PHONE
+        
         if admin_email and admin_password:
-            user = db.query(User).filter((User.email == admin_email) | (User.phone == (admin_phone or ""))).first()
-            if user:
-                user.email = admin_email
-                user.role = "admin"
-                user.is_active = True
-                user.phone_verified = True
-                user.name = user.name or "Administrator"
-                user.password_hash = hash_password(admin_password)
-                db.commit()
-            else:
+            # Try to acquire advisory lock (lock ID: 12346 for admin user)
+            result = db.execute(text("SELECT pg_try_advisory_lock(12346)"))
+            lock_acquired = result.scalar()
+            
+            if lock_acquired:
                 try:
-                    admin_user = User(
-                        email=admin_email,
-                        phone=admin_phone or "00000000000",
-                        name="Administrator",
-                        role="admin",
-                        phone_verified=True,
-                        is_active=True,
-                        password_hash=hash_password(admin_password),
-                    )
-                    db.add(admin_user)
-                    db.commit()
-                except IntegrityError as e:
-                    db.rollback()
-                    # If email/phone exists from a previous user, update that record to admin
-                    error_str = str(e).lower()
-                    if "duplicate key" in error_str or "already exists" in error_str:
-                        # Try to find and update existing user
+                    # This worker acquired the lock, create/update admin user
+                    print("[STARTUP] Acquired lock for admin user creation...")
+                    
+                    # First, check if user exists by email or phone
+                    user = db.query(User).filter(
+                        (User.email == admin_email) | 
+                        (User.phone == (admin_phone or ""))
+                    ).first()
+                    
+                    if user:
+                        # User exists, update it
+                        user.email = admin_email
+                        user.role = "admin"
+                        user.is_active = True
+                        user.phone_verified = True
+                        user.name = user.name or "Administrator"
+                        user.password_hash = hash_password(admin_password)
                         if admin_phone:
-                            u2 = db.query(User).filter(User.phone == admin_phone).first()
-                            if u2:
-                                u2.email = admin_email
-                                u2.role = "admin"
-                                u2.is_active = True
-                                u2.phone_verified = True
-                                u2.name = u2.name or "Administrator"
-                                u2.password_hash = hash_password(admin_password)
-                                db.commit()
-                                print("[STARTUP] Updated existing user to admin")
-                        else:
-                            u2 = db.query(User).filter(User.email == admin_email).first()
-                            if u2:
-                                u2.role = "admin"
-                                u2.is_active = True
-                                u2.phone_verified = True
-                                u2.name = u2.name or "Administrator"
-                                u2.password_hash = hash_password(admin_password)
-                                db.commit()
-                                print("[STARTUP] Updated existing user to admin")
+                            user.phone = admin_phone
+                        db.commit()
+                        print(f"[STARTUP] Updated existing user to admin: {admin_email}")
                     else:
-                        print(f"[STARTUP] Warning: Admin user creation error: {e}")
+                        # User doesn't exist, create it
+                        try:
+                            admin_user = User(
+                                email=admin_email,
+                                phone=admin_phone or "00000000000",
+                                name="Administrator",
+                                role="admin",
+                                phone_verified=True,
+                                is_active=True,
+                                password_hash=hash_password(admin_password),
+                            )
+                            db.add(admin_user)
+                            db.commit()
+                            print(f"[STARTUP] Created admin user: {admin_email}")
+                        except IntegrityError as e:
+                            db.rollback()
+                            # If email/phone exists, try to find and update
+                            error_str = str(e).lower()
+                            if "duplicate key" in error_str or "already exists" in error_str:
+                                # Try to find by email first
+                                u2 = db.query(User).filter(User.email == admin_email).first()
+                                if not u2 and admin_phone:
+                                    u2 = db.query(User).filter(User.phone == admin_phone).first()
+                                
+                                if u2:
+                                    u2.email = admin_email
+                                    u2.role = "admin"
+                                    u2.is_active = True
+                                    u2.phone_verified = True
+                                    u2.name = u2.name or "Administrator"
+                                    u2.password_hash = hash_password(admin_password)
+                                    if admin_phone:
+                                        u2.phone = admin_phone
+                                    db.commit()
+                                    print(f"[STARTUP] Updated existing user to admin: {admin_email}")
+                                else:
+                                    print(f"[STARTUP] Warning: Could not find user to update: {e}")
+                            else:
+                                print(f"[STARTUP] Warning: Admin user creation error: {e}")
+                finally:
+                    # Release the lock
+                    db.execute(text("SELECT pg_advisory_unlock(12346)"))
+                    db.commit()
+            else:
+                # Another worker has the lock, wait and check if admin user exists
+                print("[STARTUP] Another worker is creating admin user, waiting...")
+                import time
+                
+                # Wait up to 5 seconds for admin user to be created
+                max_wait = 5
+                wait_interval = 0.5
+                waited = 0
+                admin_exists = False
+                
+                while waited < max_wait:
+                    time.sleep(wait_interval)
+                    waited += wait_interval
+                    
+                    # Check if admin user exists
+                    try:
+                        user = db.query(User).filter(
+                            (User.email == admin_email) | 
+                            (User.phone == (admin_phone or ""))
+                        ).first()
+                        if user:
+                            admin_exists = True
+                            break
+                    except:
+                        pass
+                
+                if admin_exists:
+                    print(f"[STARTUP] Admin user already exists: {admin_email}")
+                else:
+                    # Admin user doesn't exist after waiting, try to create/update
+                    print("[STARTUP] Admin user not found after waiting, trying to create/update...")
+                    try:
+                        user = db.query(User).filter(
+                            (User.email == admin_email) | 
+                            (User.phone == (admin_phone or ""))
+                        ).first()
+                        
+                        if user:
+                            # Update existing user
+                            user.email = admin_email
+                            user.role = "admin"
+                            user.is_active = True
+                            user.phone_verified = True
+                            user.name = user.name or "Administrator"
+                            user.password_hash = hash_password(admin_password)
+                            if admin_phone:
+                                user.phone = admin_phone
+                            db.commit()
+                            print(f"[STARTUP] Updated existing user to admin: {admin_email}")
+                        else:
+                            # Create new user
+                            admin_user = User(
+                                email=admin_email,
+                                phone=admin_phone or "00000000000",
+                                name="Administrator",
+                                role="admin",
+                                phone_verified=True,
+                                is_active=True,
+                                password_hash=hash_password(admin_password),
+                            )
+                            db.add(admin_user)
+                            db.commit()
+                            print(f"[STARTUP] Created admin user: {admin_email}")
+                    except IntegrityError as e:
+                        db.rollback()
+                        error_str = str(e).lower()
+                        if "duplicate key" in error_str or "already exists" in error_str:
+                            # User already exists, try to update
+                            user = db.query(User).filter(User.email == admin_email).first()
+                            if not user and admin_phone:
+                                user = db.query(User).filter(User.phone == admin_phone).first()
+                            
+                            if user:
+                                user.email = admin_email
+                                user.role = "admin"
+                                user.is_active = True
+                                user.phone_verified = True
+                                user.name = user.name or "Administrator"
+                                user.password_hash = hash_password(admin_password)
+                                if admin_phone:
+                                    user.phone = admin_phone
+                                db.commit()
+                                print(f"[STARTUP] Updated existing user to admin: {admin_email}")
+                            else:
+                                print(f"[STARTUP] Admin user already exists (race condition handled)")
+                        else:
+                            print(f"[STARTUP] Warning: Admin user creation error: {e}")
+                    except Exception as e:
+                        error_str = str(e).lower()
+                        if "duplicate key" in error_str or "already exists" in error_str:
+                            print(f"[STARTUP] Admin user already exists (race condition handled)")
+                        else:
+                            print(f"[STARTUP] Warning: Admin user setup error: {e}")
     except Exception as e:
-        # Ignore all errors in admin user creation (race condition)
+        # Fallback: try to create/update admin user without lock
         error_str = str(e).lower()
         if "duplicate key" in error_str or "already exists" in error_str:
-            print("[STARTUP] Admin user already exists (race condition handled)")
+            print(f"[STARTUP] Admin user already exists (fallback)")
         else:
             print(f"[STARTUP] Warning: Admin user setup error: {e}")
+            # Try fallback creation
+            try:
+                if not db:
+                    db = SessionLocal()
+                from app.core.config import settings as _settings
+                admin_email = _settings.ADMIN_EMAIL
+                admin_password = _settings.ADMIN_PASSWORD
+                admin_phone = _settings.ADMIN_PHONE
+                
+                if admin_email and admin_password:
+                    user = db.query(User).filter(
+                        (User.email == admin_email) | 
+                        (User.phone == (admin_phone or ""))
+                    ).first()
+                    
+                    if user:
+                        user.email = admin_email
+                        user.role = "admin"
+                        user.is_active = True
+                        user.phone_verified = True
+                        user.name = user.name or "Administrator"
+                        user.password_hash = hash_password(admin_password)
+                        if admin_phone:
+                            user.phone = admin_phone
+                        db.commit()
+                        print(f"[STARTUP] Updated existing user to admin (fallback): {admin_email}")
+            except:
+                pass
     finally:
-        try:
-            db.close()
-        except Exception:
-            pass
+        if db:
+            try:
+                db.close()
+            except:
+                pass
 
 # Health check
 @app.get("/")
