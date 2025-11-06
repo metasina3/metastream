@@ -183,7 +183,8 @@ services:
     working_dir: /app/frontend
     env_file: .env
     environment:
-      - VITE_API_URL=https://api1.metastream.ir
+      - VITE_API_URL=${API_URL}
+      - VITE_MAIN_URL=${MAIN_URL}
     volumes:
       - ./frontend:/app/frontend
     command: ["sh", "-lc", "if [ -f package-lock.json ]; then npm ci; else npm install; fi; npm run build; npx --yes serve -s dist -l 5173"]
