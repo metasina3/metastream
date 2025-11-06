@@ -509,6 +509,7 @@ async def startup():
         db = SessionLocal()
         from sqlalchemy import text
         from app.core.config import settings as _settings
+        from app.core.security import verify_password
         
         admin_email = _settings.ADMIN_EMAIL
         admin_password = _settings.ADMIN_PASSWORD
@@ -532,12 +533,24 @@ async def startup():
                     
                     if user:
                         # User exists, update it
+                        # Only update password_hash if it doesn't exist or doesn't match
+                        needs_password_update = True
+                        if user.password_hash:
+                            try:
+                                if verify_password(admin_password, user.password_hash):
+                                    needs_password_update = False
+                                    print(f"[STARTUP] Admin user password is correct, skipping update")
+                            except:
+                                pass  # If verification fails, update password
+                        
                         user.email = admin_email
                         user.role = "admin"
                         user.is_active = True
                         user.phone_verified = True
                         user.name = user.name or "Administrator"
-                        user.password_hash = hash_password(admin_password)
+                        if needs_password_update:
+                            user.password_hash = hash_password(admin_password)
+                            print(f"[STARTUP] Updated admin user password hash")
                         if admin_phone:
                             user.phone = admin_phone
                         db.commit()
@@ -568,12 +581,22 @@ async def startup():
                                     u2 = db.query(User).filter(User.phone == admin_phone).first()
                                 
                                 if u2:
+                                    # Only update password_hash if it doesn't exist or doesn't match
+                                    needs_password_update = True
+                                    if u2.password_hash:
+                                        try:
+                                            if verify_password(admin_password, u2.password_hash):
+                                                needs_password_update = False
+                                        except:
+                                            pass
+                                    
                                     u2.email = admin_email
                                     u2.role = "admin"
                                     u2.is_active = True
                                     u2.phone_verified = True
                                     u2.name = u2.name or "Administrator"
-                                    u2.password_hash = hash_password(admin_password)
+                                    if needs_password_update:
+                                        u2.password_hash = hash_password(admin_password)
                                     if admin_phone:
                                         u2.phone = admin_phone
                                     db.commit()
@@ -626,12 +649,22 @@ async def startup():
                         
                         if user:
                             # Update existing user
+                            # Only update password_hash if it doesn't exist or doesn't match
+                            needs_password_update = True
+                            if user.password_hash:
+                                try:
+                                    if verify_password(admin_password, user.password_hash):
+                                        needs_password_update = False
+                                except:
+                                    pass
+                            
                             user.email = admin_email
                             user.role = "admin"
                             user.is_active = True
                             user.phone_verified = True
                             user.name = user.name or "Administrator"
-                            user.password_hash = hash_password(admin_password)
+                            if needs_password_update:
+                                user.password_hash = hash_password(admin_password)
                             if admin_phone:
                                 user.phone = admin_phone
                             db.commit()
@@ -660,12 +693,22 @@ async def startup():
                                 user = db.query(User).filter(User.phone == admin_phone).first()
                             
                             if user:
+                                # Only update password_hash if it doesn't exist or doesn't match
+                                needs_password_update = True
+                                if user.password_hash:
+                                    try:
+                                        if verify_password(admin_password, user.password_hash):
+                                            needs_password_update = False
+                                    except:
+                                        pass
+                                
                                 user.email = admin_email
                                 user.role = "admin"
                                 user.is_active = True
                                 user.phone_verified = True
                                 user.name = user.name or "Administrator"
-                                user.password_hash = hash_password(admin_password)
+                                if needs_password_update:
+                                    user.password_hash = hash_password(admin_password)
                                 if admin_phone:
                                     user.phone = admin_phone
                                 db.commit()
@@ -703,12 +746,22 @@ async def startup():
                     ).first()
                     
                     if user:
+                        # Only update password_hash if it doesn't exist or doesn't match
+                        needs_password_update = True
+                        if user.password_hash:
+                            try:
+                                if verify_password(admin_password, user.password_hash):
+                                    needs_password_update = False
+                            except:
+                                pass
+                        
                         user.email = admin_email
                         user.role = "admin"
                         user.is_active = True
                         user.phone_verified = True
                         user.name = user.name or "Administrator"
-                        user.password_hash = hash_password(admin_password)
+                        if needs_password_update:
+                            user.password_hash = hash_password(admin_password)
                         if admin_phone:
                             user.phone = admin_phone
                         db.commit()
