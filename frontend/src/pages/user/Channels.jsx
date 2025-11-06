@@ -195,12 +195,8 @@ function ChannelModal({ onClose, onSubmit }) {
               value={aparatInput}
               onChange={(e) => setAparatInput(e.target.value)}
               className="input w-full"
-              placeholder="https://www.aparat.com/metasina3 یا metasina3"
               required
             />
-            <p className="text-xs text-gray-500 mt-1">
-              می‌توانید لینک کامل آپارات یا فقط نام کاربری را وارد کنید
-            </p>
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2">آدرس RTMP</label>

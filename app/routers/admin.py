@@ -451,10 +451,13 @@ async def reject_item(
 @router.get("/approvals/{approval_id}/video")
 async def get_approval_video(
     approval_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin)
 ):
-    """Get video file for preview (admin only)"""
+    """Get video file for preview (admin only) with Range support (for seeking)"""
+    from fastapi.responses import FileResponse, StreamingResponse
+    
     a = db.query(Approval).filter(Approval.id == approval_id).first()
     if not a:
         raise HTTPException(status_code=404, detail="Approval not found")
@@ -475,10 +478,63 @@ async def get_approval_video(
         'webm': 'video/webm',
         'avi': 'video/x-msvideo',
         'mov': 'video/quicktime',
+        'mkv': 'video/x-matroska',
+        'flv': 'video/x-flv',
     }
     media_type = media_types.get(ext, 'video/mp4')
     
-    return FileResponse(video_file, media_type=media_type, filename=f"video_{v.id}.{ext}")
+    # Get file size
+    file_size = os.path.getsize(video_file)
+    
+    # Check for Range header (for video seeking)
+    range_header = request.headers.get('range')
+    
+    if range_header:
+        # Parse range header: "bytes=start-end"
+        range_match = range_header.replace('bytes=', '').split('-')
+        start = int(range_match[0]) if range_match[0] else 0
+        end = int(range_match[1]) if len(range_match) > 1 and range_match[1] else file_size - 1
+        
+        # Ensure valid range
+        if start >= file_size or end >= file_size or start > end:
+            raise HTTPException(status_code=416, detail="Range not satisfiable")
+        
+        # Calculate chunk size
+        chunk_size = end - start + 1
+        
+        # Create generator to read the chunk
+        def iterfile():
+            with open(video_file, 'rb') as f:
+                f.seek(start)
+                remaining = chunk_size
+                while remaining > 0:
+                    chunk = f.read(min(8192, remaining))
+                    if not chunk:
+                        break
+                    remaining -= len(chunk)
+                    yield chunk
+        
+        headers = {
+            'Content-Range': f'bytes {start}-{end}/{file_size}',
+            'Accept-Ranges': 'bytes',
+            'Content-Length': str(chunk_size),
+            'Content-Type': media_type,
+        }
+        
+        return StreamingResponse(
+            iterfile(),
+            status_code=206,
+            headers=headers,
+            media_type=media_type
+        )
+    else:
+        # No range, return full file with Accept-Ranges header
+        return FileResponse(
+            video_file,
+            media_type=media_type,
+            filename=f"video_{v.id}.{ext}",
+            headers={'Accept-Ranges': 'bytes'}
+        )
 
 @router.post("/videos/{video_id}/update-duration")
 async def update_video_duration(

@@ -61,6 +61,7 @@ export default function UserVideos() {
         await api.post('/api/dashboard/videos', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
           signal: abortController.signal,
+          timeout: 300000, // 5 minutes timeout for mobile uploads
           onUploadProgress: (e) => {
             if (e.total) {
               const pct = Math.floor((e.loaded / e.total) * 100)
@@ -105,6 +106,7 @@ export default function UserVideos() {
           },
           params: { filename: file.name, title: title },
           signal: abortController.signal,
+          timeout: 300000, // 5 minutes timeout for mobile uploads
         })
         if (res.data?.received != null) {
           received = res.data.received

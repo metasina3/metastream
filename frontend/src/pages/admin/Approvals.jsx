@@ -82,15 +82,22 @@ export default function AdminApprovals() {
       </div>
 
       {previewVideo && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={() => setPreviewVideo(null)}>
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">پیش‌نمایش ویدیو</h2>
-              <button onClick={() => setPreviewVideo(null)} className="text-gray-500 hover:text-gray-700">✕</button>
+              <button onClick={() => setPreviewVideo(null)} className="text-gray-500 hover:text-gray-700 text-2xl font-bold">×</button>
             </div>
-            <video controls className="w-full" src={approvalsAPI.getVideoUrl(previewVideo)}>
-              مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند
-            </video>
+            <div className="p-4">
+              <video
+                controls
+                className="w-full rounded"
+                style={{ maxHeight: '70vh' }}
+                src={approvalsAPI.getVideoUrl(previewVideo)}
+              >
+                مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند
+              </video>
+            </div>
           </div>
         </div>
       )}

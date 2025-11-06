@@ -156,7 +156,7 @@ export default function Layout() {
       )}
 
       {/* Main Content */}
-      <main className={`${isMobile ? 'mr-0 p-4' : 'mr-64 p-8'}`}>
+      <main className={`${isMobile ? 'mr-0 p-4 pt-20' : 'mr-64 p-8'}`}>
         <Outlet />
       </main>
     </div>
