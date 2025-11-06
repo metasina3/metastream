@@ -70,23 +70,118 @@ except:
 @app.on_event("startup")
 async def startup():
     """Create database tables"""
-    # Create tables with error handling for race conditions
-    # Multiple workers may try to create tables simultaneously
+    # Use PostgreSQL advisory lock to prevent race conditions
+    # Only one worker will create tables, others will wait
+    db = None
     try:
-        Base.metadata.create_all(bind=engine)
-        print("[STARTUP] Database tables created/verified")
-    except IntegrityError as e:
-        # Ignore duplicate key errors (race condition when multiple workers start)
-        if "pg_type_typname_nsp_index" in str(e) or "duplicate key" in str(e).lower():
-            print("[STARTUP] Tables already exist (race condition handled)")
+        db = SessionLocal()
+        from sqlalchemy import text
+        
+        # Try to acquire advisory lock (lock ID: 12345)
+        # This ensures only one worker creates tables
+        result = db.execute(text("SELECT pg_try_advisory_lock(12345)"))
+        lock_acquired = result.scalar()
+        
+        if lock_acquired:
+            try:
+                # This worker acquired the lock, create tables
+                print("[STARTUP] Acquired lock, creating database tables...")
+                Base.metadata.create_all(bind=engine)
+                print("[STARTUP] Database tables created/verified")
+            except Exception as e:
+                # Log errors but don't fail
+                error_str = str(e).lower()
+                if any(keyword in error_str for keyword in [
+                    "pg_type_typname_nsp_index",
+                    "pg_class_relname_nsp_index", 
+                    "duplicate key",
+                    "already exists",
+                    "relation"
+                ]):
+                    print("[STARTUP] Tables already exist")
+                else:
+                    print(f"[STARTUP] Warning: Database creation error: {e}")
+            finally:
+                # Release the lock
+                db.execute(text("SELECT pg_advisory_unlock(12345)"))
+                db.commit()
         else:
-            print(f"[STARTUP] Warning: Database creation error: {e}")
+            # Another worker has the lock, wait for it to finish
+            print("[STARTUP] Another worker is creating tables, waiting...")
+            import time
+            
+            # Wait up to 10 seconds for tables to be created
+            max_wait = 10
+            wait_interval = 0.5
+            waited = 0
+            tables_exist = False
+            
+            while waited < max_wait:
+                time.sleep(wait_interval)
+                waited += wait_interval
+                
+                # Check if tables exist
+                try:
+                    result = db.execute(text("""
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.tables 
+                            WHERE table_name = 'users'
+                        )
+                    """))
+                    tables_exist = result.scalar()
+                    if tables_exist:
+                        break
+                except:
+                    pass
+            
+            if tables_exist:
+                print("[STARTUP] Tables already exist (created by another worker)")
+            else:
+                # Tables don't exist yet after waiting, try to create them (with error handling)
+                print("[STARTUP] Tables not found after waiting, trying to create...")
+                try:
+                    Base.metadata.create_all(bind=engine)
+                    print("[STARTUP] Database tables created")
+                except Exception as e:
+                    error_str = str(e).lower()
+                    if any(keyword in error_str for keyword in [
+                        "pg_type_typname_nsp_index",
+                        "pg_class_relname_nsp_index", 
+                        "duplicate key",
+                        "already exists",
+                        "relation"
+                    ]):
+                        print("[STARTUP] Tables already exist (race condition handled)")
+                    else:
+                        print(f"[STARTUP] Warning: Database creation error: {e}")
     except Exception as e:
-        # Log other errors but don't fail startup
-        print(f"[STARTUP] Warning: Database creation error: {e}")
+        # Fallback: try to create tables without lock (for compatibility)
+        print(f"[STARTUP] Lock mechanism failed, trying direct creation: {e}")
+        try:
+            Base.metadata.create_all(bind=engine)
+            print("[STARTUP] Database tables created/verified (fallback)")
+        except Exception as e2:
+            error_str = str(e2).lower()
+            if any(keyword in error_str for keyword in [
+                "pg_type_typname_nsp_index",
+                "pg_class_relname_nsp_index", 
+                "duplicate key",
+                "already exists",
+                "relation"
+            ]):
+                print("[STARTUP] Tables already exist (fallback)")
+            else:
+                print(f"[STARTUP] Warning: Database creation error: {e2}")
+    finally:
+        if db:
+            try:
+                db.close()
+            except:
+                pass
     
     # Run migrations
     # Each migration in separate transaction to avoid abort issues
+    # Use a new connection for migrations
     db = None
     try:
         db = SessionLocal()
@@ -105,7 +200,11 @@ async def startup():
                 print("[MIGRATION] Added rtmp_url to channels")
         except Exception as e:
             db.rollback()
-            print(f"[MIGRATION] Note: rtmp_url migration skipped: {e}")
+            error_str = str(e).lower()
+            if "already exists" in error_str or "duplicate" in error_str:
+                print("[MIGRATION] Note: rtmp_url already exists")
+            else:
+                print(f"[MIGRATION] Note: rtmp_url migration skipped: {e}")
             
         try:
             result = db.execute(text("""
@@ -119,14 +218,30 @@ async def startup():
                 print("[MIGRATION] Added rtmp_key to channels")
         except Exception as e:
             db.rollback()
-            print(f"[MIGRATION] Note: rtmp_key migration skipped: {e}")
+            error_str = str(e).lower()
+            if "already exists" in error_str or "duplicate" in error_str:
+                print("[MIGRATION] Note: rtmp_key already exists")
+            else:
+                print(f"[MIGRATION] Note: rtmp_key migration skipped: {e}")
             
         try:
-            db.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS unique_aparat_username_idx ON channels (aparat_username)"))
-            db.commit()
+            # Check if index exists first
+            result = db.execute(text("""
+                SELECT indexname 
+                FROM pg_indexes 
+                WHERE tablename='channels' AND indexname='unique_aparat_username_idx'
+            """))
+            if not result.fetchone():
+                db.execute(text("CREATE UNIQUE INDEX unique_aparat_username_idx ON channels (aparat_username)"))
+                db.commit()
+                print("[MIGRATION] Created unique_aparat_username_idx")
         except Exception as e:
             db.rollback()
-            print(f"[MIGRATION] Note: unique_aparat_username_idx skipped: {e}")
+            error_str = str(e).lower()
+            if "already exists" in error_str or "duplicate key" in error_str:
+                print("[MIGRATION] Note: unique_aparat_username_idx already exists")
+            else:
+                print(f"[MIGRATION] Note: unique_aparat_username_idx skipped: {e}")
         
         # 2. Migrate streams table
         try:
@@ -141,7 +256,11 @@ async def startup():
                 print("[MIGRATION] Added caption to streams")
         except Exception as e:
             db.rollback()
-            print(f"[MIGRATION] Note: caption migration skipped: {e}")
+            error_str = str(e).lower()
+            if "already exists" in error_str or "duplicate" in error_str:
+                print("[MIGRATION] Note: caption already exists")
+            else:
+                print(f"[MIGRATION] Note: caption migration skipped: {e}")
             
         try:
             result = db.execute(text("""
@@ -155,7 +274,11 @@ async def startup():
                 print("[MIGRATION] Added slug to streams")
         except Exception as e:
             db.rollback()
-            print(f"[MIGRATION] Note: slug migration skipped: {e}")
+            error_str = str(e).lower()
+            if "already exists" in error_str or "duplicate" in error_str:
+                print("[MIGRATION] Note: slug already exists")
+            else:
+                print(f"[MIGRATION] Note: slug migration skipped: {e}")
             
         try:
             result = db.execute(text("""
@@ -169,7 +292,11 @@ async def startup():
                 print("[MIGRATION] Added duration to streams")
         except Exception as e:
             db.rollback()
-            print(f"[MIGRATION] Note: duration migration skipped: {e}")
+            error_str = str(e).lower()
+            if "already exists" in error_str or "duplicate" in error_str:
+                print("[MIGRATION] Note: duration already exists")
+            else:
+                print(f"[MIGRATION] Note: duration migration skipped: {e}")
         
         # Add error_message column if it doesn't exist
         try:
@@ -184,7 +311,11 @@ async def startup():
                 print("[MIGRATION] Added error_message to streams")
         except Exception as e:
             db.rollback()
-            print(f"[MIGRATION] Note: error_message migration skipped: {e}")
+            error_str = str(e).lower()
+            if "already exists" in error_str or "duplicate" in error_str:
+                print("[MIGRATION] Note: error_message already exists")
+            else:
+                print(f"[MIGRATION] Note: error_message migration skipped: {e}")
         
         # Make channel_id and video_id nullable to protect streams from deletion
         try:
@@ -297,7 +428,11 @@ async def startup():
                 print("[MIGRATION] Added last_name to comments")
         except Exception as e:
             db.rollback()
-            print(f"[MIGRATION] Note: last_name migration skipped: {e}")
+            error_str = str(e).lower()
+            if "already exists" in error_str or "duplicate" in error_str:
+                print("[MIGRATION] Note: last_name already exists")
+            else:
+                print(f"[MIGRATION] Note: last_name migration skipped: {e}")
             
         try:
             result = db.execute(text("""
@@ -311,7 +446,11 @@ async def startup():
                 print("[MIGRATION] Added text to comments")
         except Exception as e:
             db.rollback()
-            print(f"[MIGRATION] Note: text migration skipped: {e}")
+            error_str = str(e).lower()
+            if "already exists" in error_str or "duplicate" in error_str:
+                print("[MIGRATION] Note: text already exists")
+            else:
+                print(f"[MIGRATION] Note: text migration skipped: {e}")
             
         try:
             result = db.execute(text("""
@@ -325,7 +464,11 @@ async def startup():
                 print("[MIGRATION] Added is_approved to comments")
         except Exception as e:
             db.rollback()
-            print(f"[MIGRATION] Note: is_approved migration skipped: {e}")
+            error_str = str(e).lower()
+            if "already exists" in error_str or "duplicate" in error_str:
+                print("[MIGRATION] Note: is_approved already exists")
+            else:
+                print(f"[MIGRATION] Note: is_approved migration skipped: {e}")
             
         try:
             result = db.execute(text("""
@@ -339,7 +482,11 @@ async def startup():
                 print("[MIGRATION] Added is_deleted to comments")
         except Exception as e:
             db.rollback()
-            print(f"[MIGRATION] Note: is_deleted migration skipped: {e}")
+            error_str = str(e).lower()
+            if "already exists" in error_str or "duplicate" in error_str:
+                print("[MIGRATION] Note: is_deleted already exists")
+            else:
+                print(f"[MIGRATION] Note: is_deleted migration skipped: {e}")
         
         print("[MIGRATION] All migrations completed successfully")
     except Exception as e:
@@ -385,21 +532,42 @@ async def startup():
                     )
                     db.add(admin_user)
                     db.commit()
-                except IntegrityError:
+                except IntegrityError as e:
                     db.rollback()
-                    # If phone exists from a previous user, update that record to admin
-                    if admin_phone:
-                        u2 = db.query(User).filter(User.phone == admin_phone).first()
-                        if u2:
-                            u2.email = admin_email
-                            u2.role = "admin"
-                            u2.is_active = True
-                            u2.phone_verified = True
-                            u2.name = u2.name or "Administrator"
-                            u2.password_hash = hash_password(admin_password)
-                            db.commit()
-    except Exception:
-        pass
+                    # If email/phone exists from a previous user, update that record to admin
+                    error_str = str(e).lower()
+                    if "duplicate key" in error_str or "already exists" in error_str:
+                        # Try to find and update existing user
+                        if admin_phone:
+                            u2 = db.query(User).filter(User.phone == admin_phone).first()
+                            if u2:
+                                u2.email = admin_email
+                                u2.role = "admin"
+                                u2.is_active = True
+                                u2.phone_verified = True
+                                u2.name = u2.name or "Administrator"
+                                u2.password_hash = hash_password(admin_password)
+                                db.commit()
+                                print("[STARTUP] Updated existing user to admin")
+                        else:
+                            u2 = db.query(User).filter(User.email == admin_email).first()
+                            if u2:
+                                u2.role = "admin"
+                                u2.is_active = True
+                                u2.phone_verified = True
+                                u2.name = u2.name or "Administrator"
+                                u2.password_hash = hash_password(admin_password)
+                                db.commit()
+                                print("[STARTUP] Updated existing user to admin")
+                    else:
+                        print(f"[STARTUP] Warning: Admin user creation error: {e}")
+    except Exception as e:
+        # Ignore all errors in admin user creation (race condition)
+        error_str = str(e).lower()
+        if "duplicate key" in error_str or "already exists" in error_str:
+            print("[STARTUP] Admin user already exists (race condition handled)")
+        else:
+            print(f"[STARTUP] Warning: Admin user setup error: {e}")
     finally:
         try:
             db.close()
