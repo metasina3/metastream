@@ -82,6 +82,11 @@ export const dashboardAPI = {
   }),
   deleteChannel: (id) => api.delete(`/api/dashboard/channels/${id}`),
   uploadVideo: (formData) => api.post('/api/dashboard/videos', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  updateVideoTitle: (id, title) => {
+    const formData = new FormData()
+    formData.append('title', title)
+    return api.put(`/api/dashboard/videos/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
   deleteVideo: (id) => api.delete(`/api/dashboard/videos/${id}`),
   createStream: (data) => api.post('/api/dashboard/streams', data),
   getStreams: () => api.get('/api/dashboard/streams'),

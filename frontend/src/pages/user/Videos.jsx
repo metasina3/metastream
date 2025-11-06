@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { PlusIcon, TrashIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, TrashIcon, ArrowPathIcon, PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import api, { dashboardAPI } from '../../utils/api'
 
 export default function UserVideos() {
@@ -168,6 +168,22 @@ export default function UserVideos() {
     }
   }
 
+  const handleUpdateVideoTitle = async (id, newTitle) => {
+    if (!newTitle || newTitle.trim() === '') {
+      alert('عنوان نمی‌تواند خالی باشد')
+      return false
+    }
+    try {
+      await dashboardAPI.updateVideoTitle(id, newTitle.trim())
+      // Update local state immediately
+      setVideos(prev => prev.map(v => v.id === id ? { ...v, title: newTitle.trim() } : v))
+      return true
+    } catch (error) {
+      alert(error.response?.data?.detail || 'خطا در تغییر عنوان')
+      return false
+    }
+  }
+
   if (loading) {
     return <div className="text-center py-12">در حال بارگذاری...</div>
   }
@@ -215,88 +231,14 @@ export default function UserVideos() {
               }
               
               return (
-                <div key={video.id} className="border rounded-lg p-3 sm:p-4">
-                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
-                    <div className="flex-1 w-full">
-                      <h3 className="font-semibold text-base sm:text-lg mb-2">{video.title || 'بدون عنوان'}</h3>
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2">
-                        <span className="flex items-center gap-1">
-                          <span>⏱️</span>
-                          <span>مدت زمان: <strong>{formatDuration(video.duration)}</strong></span>
-                        </span>
-                        {video.created_at && (
-                          <span className="flex items-center gap-1">
-                            <span>📅</span>
-                            <span>آپلود: <strong>{new Date(video.created_at).toLocaleString('fa-IR', { 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              timeZone: 'Asia/Tehran'
-                            })}</strong></span>
-                          </span>
-                        )}
-                        {video.file_size > 0 && (
-                          <span className="flex items-center gap-1">
-                            <span>💾</span>
-                            <span>حجم: <strong>{Math.round(video.file_size / 1024 / 1024)} MB</strong></span>
-                          </span>
-                        )}
-                      </div>
-                      <span className={`inline-block px-2 py-1 rounded text-xs ${
-                        video.status === 'ready' ? 'bg-green-100 text-green-700' :
-                        video.status === 'awaiting_approval' ? 'bg-yellow-100 text-yellow-700' :
-                        video.status === 'processing' ? 'bg-blue-100 text-blue-700' :
-                        video.status === 'pending' ? 'bg-gray-100 text-gray-700' :
-                        video.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {video.status === 'ready' ? 'آماده' :
-                         video.status === 'awaiting_approval' ? 'در انتظار تایید' :
-                         video.status === 'processing' ? 'در حال پردازش' :
-                         video.status === 'pending' ? 'در انتظار' :
-                         video.status === 'rejected' ? 'رد شده' : video.status}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-2 items-center mt-2 sm:mt-0">
-                      {(video.processed_file || video.original_file) && (
-                        <button
-                          onClick={() => setPlayingVideo(video)}
-                          className="btn-secondary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
-                          title="پخش ویدیو"
-                        >
-                          <span className="hidden sm:inline">▶️ پخش</span>
-                          <span className="sm:hidden">▶️</span>
-                        </button>
-                      )}
-                      {video.status === 'ready' && (
-                        <button
-                          onClick={() => {
-                            navigate('/dashboard/streams', {
-                              state: {
-                                openCreate: true,
-                                videoId: video.id
-                              }
-                            })
-                          }}
-                          className="btn-primary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
-                          title="استفاده برای استریم"
-                        >
-                          <span className="hidden sm:inline">📡 استریم</span>
-                          <span className="sm:hidden">📡</span>
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDeleteVideo(video.id)}
-                        className="text-red-600 hover:text-red-800 p-1.5 sm:p-2"
-                        title="حذف ویدیو"
-                      >
-                        <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <VideoItem
+                  key={video.id}
+                  video={video}
+                  onUpdateTitle={handleUpdateVideoTitle}
+                  onDelete={handleDeleteVideo}
+                  onPlay={() => setPlayingVideo(video)}
+                  formatDuration={formatDuration}
+                />
               )
             })}
           </div>
@@ -324,6 +266,153 @@ export default function UserVideos() {
           onClose={() => setPlayingVideo(null)}
         />
       )}
+    </div>
+  )
+}
+
+function VideoItem({ video, onUpdateTitle, onDelete, onPlay, formatDuration }) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState(video.title || '')
+
+  // Update editTitle when video.title changes (e.g., after refresh)
+  useEffect(() => {
+    if (!isEditing) {
+      setEditTitle(video.title || '')
+    }
+  }, [video.title, isEditing])
+
+  const handleSave = async () => {
+    const success = await onUpdateTitle(video.id, editTitle)
+    if (success) {
+      setIsEditing(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditTitle(video.title || '')
+    setIsEditing(false)
+  }
+
+  return (
+    <div className="border rounded-lg p-3 sm:p-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+        <div className="flex-1 w-full">
+          {isEditing ? (
+            <div className="flex items-center gap-2 mb-2">
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="input flex-1 text-base sm:text-lg font-semibold"
+                autoFocus
+                maxLength={255}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSave()
+                  } else if (e.key === 'Escape') {
+                    handleCancel()
+                  }
+                }}
+              />
+              <button
+                onClick={handleSave}
+                className="text-green-600 hover:text-green-800 p-1"
+                title="ذخیره"
+              >
+                <CheckIcon className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleCancel}
+                className="text-red-600 hover:text-red-800 p-1"
+                title="لغو"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="font-semibold text-base sm:text-lg flex-1">{video.title || 'بدون عنوان'}</h3>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-gray-500 hover:text-gray-700 p-1"
+                title="ویرایش عنوان"
+              >
+                <PencilIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2">
+            <span className="flex items-center gap-1">
+              <span>⏱️</span>
+              <span>مدت زمان: <strong>{formatDuration(video.duration)}</strong></span>
+            </span>
+            {video.created_at && (
+              <span className="flex items-center gap-1">
+                <span>📅</span>
+                <span>آپلود: <strong>{new Date(video.created_at).toLocaleString('fa-IR', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  timeZone: 'Asia/Tehran'
+                })}</strong></span>
+              </span>
+            )}
+            {video.file_size > 0 && (
+              <span className="flex items-center gap-1">
+                <span>💾</span>
+                <span>حجم: <strong>{Math.round(video.file_size / 1024 / 1024)} MB</strong></span>
+              </span>
+            )}
+          </div>
+          <span className={`inline-block px-2 py-1 rounded text-xs ${
+            video.status === 'ready' ? 'bg-green-100 text-green-700' :
+            video.status === 'awaiting_approval' ? 'bg-yellow-100 text-yellow-700' :
+            video.status === 'processing' ? 'bg-blue-100 text-blue-700' :
+            video.status === 'pending' ? 'bg-gray-100 text-gray-700' :
+            video.status === 'rejected' ? 'bg-red-100 text-red-700' :
+            'bg-gray-100 text-gray-700'
+          }`}>
+            {video.status === 'ready' ? 'آماده' :
+             video.status === 'awaiting_approval' ? 'در انتظار تایید' :
+             video.status === 'processing' ? 'در حال پردازش' :
+             video.status === 'pending' ? 'در انتظار' :
+             video.status === 'rejected' ? 'رد شده' : video.status}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2 items-center mt-2 sm:mt-0">
+          {(video.processed_file || video.original_file) && (
+            <button
+              onClick={onPlay}
+              className="btn-secondary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+              title="پخش ویدیو"
+            >
+              <span className="hidden sm:inline">▶️ پخش</span>
+              <span className="sm:hidden">▶️</span>
+            </button>
+          )}
+          {video.status === 'ready' && (
+            <button
+              onClick={() => {
+                window.location.href = '/dashboard/streams?videoId=' + video.id
+              }}
+              className="btn-primary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+              title="استفاده برای استریم"
+            >
+              <span className="hidden sm:inline">📡 استریم</span>
+              <span className="sm:hidden">📡</span>
+            </button>
+          )}
+          <button
+            onClick={() => onDelete(video.id)}
+            className="text-red-600 hover:text-red-800 p-1.5 sm:p-2"
+            title="حذف ویدیو"
+          >
+            <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

@@ -709,6 +709,38 @@ async def upload_status(upload_id: str, db: Session = Depends(get_db), user: Use
     return {"exists": True, "received": os.path.getsize(tmp_path)}
 
 
+@router.put("/videos/{video_id}")
+async def update_video_title(
+    video_id: int,
+    title: str = Form(..., min_length=1, max_length=255),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    """
+    Update video title (no approval needed)
+    """
+    video = db.query(Video).filter(
+        Video.id == video_id,
+        Video.user_id == user.id
+    ).first()
+    
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+    
+    # Update title
+    video.title = title
+    db.commit()
+    db.refresh(video)
+    
+    return {
+        "success": True,
+        "video": {
+            "id": video.id,
+            "title": video.title
+        }
+    }
+
+
 @router.delete("/videos/{video_id}")
 async def delete_video(
     video_id: int,
