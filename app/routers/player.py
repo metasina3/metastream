@@ -9,6 +9,7 @@ from app.models import Channel, StreamSchedule, Comment, Viewer
 from typing import Optional
 from datetime import datetime
 import uuid
+import os
 
 router = APIRouter(tags=["player"])
 
@@ -286,6 +287,37 @@ async def submit_comment(
         phone = viewer_data.get("phone")
     except:
         raise HTTPException(status_code=400, detail="Invalid viewer data")
+    
+    # Check for swear words using Go service (default enabled) - SYNC CHECK BEFORE SAVING
+    try:
+        import httpx
+        from app.core.config import settings
+        
+        # Get Go service URL from environment (default to localhost:9000)
+        go_service_url = os.getenv("GO_SERVICE_URL", "http://go-service:9000")
+        
+        # Use sync client to check immediately (blocking)
+        with httpx.Client(timeout=2.0) as client:
+            check_response = client.post(
+                f"{go_service_url}/check-swear",
+                json={"text": message},
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if check_response.status_code == 200:
+                check_data = check_response.json()
+                if check_data.get("has_swear", False):
+                    # Comment contains swear words - reject immediately (don't save)
+                    print(f"[COMMENT] Comment rejected due to swear words (stream_id={stream.id}, message_length={len(message)})")
+                    # Return success but don't save - user won't see their comment
+                    return {
+                        "success": True,
+                        "comment": None,
+                        "message": "Comment submitted"
+                    }
+    except Exception as e:
+        # If Go service is unavailable, log but continue (fail open)
+        print(f"[COMMENT] Error checking swear words: {e}, continuing anyway")
     
     # Create comment (pending approval - will be published after 15 seconds if approved)
     from datetime import timedelta

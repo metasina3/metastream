@@ -15,6 +15,7 @@ import (
 
 var rdb *redis.Client
 var ctx = context.Background()
+var persianSwear *PersianSwear
 
 func init() {
 	// Initialize Redis client
@@ -29,6 +30,10 @@ func init() {
 	if err != nil {
 		log.Fatal("Failed to connect to Redis:", err)
 	}
+
+	// Initialize PersianSwear filter
+	persianSwear = NewPersianSwear()
+	log.Printf("[GO] PersianSwear filter initialized with %d words", len(persianSwear.swearWords))
 }
 
 type CheckUpdateRequest struct {
@@ -53,6 +58,14 @@ type UpdateCheckResponse struct {
 type HeartbeatRequest struct {
 	StreamID int64  `json:"stream_id" binding:"required"`
 	ViewerID string `json:"viewer_id"`
+}
+
+type CheckSwearRequest struct {
+	Text string `json:"text" binding:"required"`
+}
+
+type CheckSwearResponse struct {
+	HasSwear bool `json:"has_swear"`
 }
 
 func checkUpdate(c *gin.Context) {
@@ -192,6 +205,24 @@ func health(c *gin.Context) {
 	c.JSON(200, gin.H{"status": "healthy", "service": "comment-polling"})
 }
 
+func checkSwear(c *gin.Context) {
+	var req CheckSwearRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if text contains swear words
+	hasSwear := persianSwear.HasSwear(req.Text)
+
+	resp := CheckSwearResponse{
+		HasSwear: hasSwear,
+	}
+
+	log.Printf("[GO] Swear check: text length=%d, has_swear=%v", len(req.Text), hasSwear)
+	c.JSON(200, resp)
+}
+
 func corsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -214,6 +245,7 @@ func main() {
 	// Routes
 	r.POST("/check-update", checkUpdate)
 	r.POST("/heartbeat", heartbeat)
+	r.POST("/check-swear", checkSwear)
 	r.GET("/health", health)
 
 	// Start server
