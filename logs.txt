@@ -1,0 +1,1628 @@
+flower-1  | [I 251106 23:05:46 command:168] Visit me at http://0.0.0.0:5555
+flower-1  | [I 251106 23:05:46 command:176] Broker: redis://redis:6379/0
+flower-1  | [I 251106 23:05:46 command:177] Registered tasks: 
+flower-1  |     ['app.tasks.backup.backup_database',
+flower-1  |      'app.tasks.cleanup.cleanup_old_comments',
+flower-1  |      'app.tasks.cleanup.cleanup_old_viewers',
+flower-1  |      'app.tasks.cleanup.cleanup_rejected_channels',
+flower-1  |      'app.tasks.cleanup.cleanup_rejected_videos',
+flower-1  |      'app.tasks.comments.auto_approve_comments',
+flower-1  |      'app.tasks.stream.check_and_start_streams',
+flower-1  |      'app.tasks.stream.check_live_streams',
+flower-1  |      'app.tasks.stream.start_stream_task',
+flower-1  |      'app.tasks.stream.stop_stream',
+flower-1  |      'app.tasks.telegram.notify_new_video',
+flower-1  |      'app.tasks.telegram.send_telegram_notification',
+flower-1  |      'app.tasks.video.prepare_video',
+flower-1  |      'celery.accumulate',
+flower-1  |      'celery.backend_cleanup',
+flower-1  |      'celery.chain',
+flower-1  |      'celery.chord',
+flower-1  |      'celery.chord_unlock',
+flower-1  |      'celery.chunks',
+flower-1  |      'celery.group',
+flower-1  |      'celery.map',
+flower-1  |      'celery.starmap']
+flower-1  | [I 251106 23:05:47 mixins:228] Connected to redis://redis:6379/0
+flower-1  | [W 251106 23:05:48 inspector:44] Inspect method stats failed
+flower-1  | [W 251106 23:05:48 inspector:44] Inspect method revoked failed
+flower-1  | [W 251106 23:05:48 inspector:44] Inspect method active_queues failed
+flower-1  | [W 251106 23:05:48 inspector:44] Inspect method active failed
+flower-1  | [W 251106 23:05:48 inspector:44] Inspect method reserved failed
+flower-1  | [W 251106 23:05:48 inspector:44] Inspect method conf failed
+flower-1  | [W 251106 23:05:48 inspector:44] Inspect method registered failed
+flower-1  | [W 251106 23:05:48 inspector:44] Inspect method scheduled failed
+go-service-1  | [GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+go-service-1  | 
+go-service-1  | [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+go-service-1  |  - using env:	export GIN_MODE=release
+go-service-1  | 2025/11/06 23:05:44 [GO] PersianSwear filter initialized with 322 words
+go-service-1  | 2025/11/06 23:05:44 Starting Go service on :9000
+go-service-1  |  - using code:	gin.SetMode(gin.ReleaseMode)
+go-service-1  | 
+go-service-1  | [GIN-debug] POST   /check-update             --> main.checkUpdate (4 handlers)
+go-service-1  | [GIN-debug] POST   /heartbeat                --> main.heartbeat (4 handlers)
+go-service-1  | [GIN-debug] POST   /check-swear              --> main.checkSwear (4 handlers)
+go-service-1  | [GIN-debug] GET    /health                   --> main.health (4 handlers)
+beat-1        | celery beat v5.4.0 (opalescent) is starting.
+beat-1        | __    -    ... __   -        _
+beat-1        | LocalTime -> 2025-11-06 23:05:52
+beat-1        | Configuration ->
+beat-1        |     . broker -> redis://redis:6379/0
+beat-1        |     . loader -> celery.loaders.app.AppLoader
+beat-1        |     . scheduler -> celery.beat.PersistentScheduler
+beat-1        |     . db -> /app/uploads/celerybeat-schedule
+beat-1        |     . logfile -> [stderr]@%INFO
+beat-1        |     . maxinterval -> 5.00 minutes (300s)
+beat-1        | [2025-11-06 23:05:52,698: INFO/MainProcess] beat: Starting...
+beat-1        | [2025-11-06 23:05:57,729: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:06:02,723: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:06:07,723: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:06:12,723: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:06:17,723: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:06:22,724: INFO/MainProcess] Scheduler: Sending due task check-and-start-streams (app.tasks.stream.check_and_start_streams)
+beat-1        | [2025-11-06 23:06:22,736: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:06:27,737: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:06:32,736: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:06:37,736: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:06:42,737: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:06:47,737: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:06:52,723: INFO/MainProcess] Scheduler: Sending due task check-live-streams (app.tasks.stream.check_live_streams)
+beat-1        | [2025-11-06 23:06:52,728: INFO/MainProcess] Scheduler: Sending due task check-and-start-streams (app.tasks.stream.check_and_start_streams)
+beat-1        | [2025-11-06 23:06:52,737: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:06:57,737: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:07:02,737: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:07:07,738: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:07:12,738: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:07:17,738: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:07:22,728: INFO/MainProcess] Scheduler: Sending due task check-and-start-streams (app.tasks.stream.check_and_start_streams)
+beat-1        | [2025-11-06 23:07:22,738: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:07:27,738: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+redis-1       | 1:C 06 Nov 2025 19:35:44.629 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+redis-1       | 1:C 06 Nov 2025 19:35:44.629 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+redis-1       | 1:C 06 Nov 2025 19:35:44.629 * Redis version=7.4.7, bits=64, commit=00000000, modified=0, pid=1, just started
+redis-1       | 1:C 06 Nov 2025 19:35:44.629 * Configuration loaded
+redis-1       | 1:M 06 Nov 2025 19:35:44.630 * monotonic clock: POSIX clock_gettime
+redis-1       | 1:M 06 Nov 2025 19:35:44.632 * Running mode=standalone, port=6379.
+redis-1       | 1:M 06 Nov 2025 19:35:44.633 * Server initialized
+redis-1       | 1:M 06 Nov 2025 19:35:44.633 * Ready to accept connections tcp
+beat-1        | [2025-11-06 23:07:32,738: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:07:37,738: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:07:42,738: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:07:47,739: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:07:52,723: INFO/MainProcess] Scheduler: Sending due task check-live-streams (app.tasks.stream.check_live_streams)
+beat-1        | [2025-11-06 23:07:52,728: INFO/MainProcess] Scheduler: Sending due task check-and-start-streams (app.tasks.stream.check_and_start_streams)
+beat-1        | [2025-11-06 23:07:52,739: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:07:57,739: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:08:02,739: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+beat-1        | [2025-11-06 23:08:07,739: INFO/MainProcess] Scheduler: Sending due task auto-approve-comments (app.tasks.comments.auto_approve_comments)
+frontend-1    | npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+frontend-1    | npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+frontend-1    | npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+frontend-1    | npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+frontend-1    | npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+frontend-1    | npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+frontend-1    | 
+frontend-1    | added 405 packages, and audited 406 packages in 12s
+frontend-1    | 
+frontend-1    | 134 packages are looking for funding
+frontend-1    |   run `npm fund` for details
+frontend-1    | 
+frontend-1    | 2 moderate severity vulnerabilities
+frontend-1    | 
+frontend-1    | To address all issues (including breaking changes), run:
+frontend-1    |   npm audit fix --force
+frontend-1    | 
+frontend-1    | Run `npm audit` for details.
+frontend-1    | npm notice
+frontend-1    | npm notice New major version of npm available! 10.8.2 -> 11.6.2
+frontend-1    | npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+frontend-1    | npm notice To update run: npm install -g npm@11.6.2
+frontend-1    | npm notice
+frontend-1    | 
+frontend-1    | > metastream-frontend@2.0.0 build
+frontend-1    | > vite build
+frontend-1    | 
+frontend-1    | vite v5.4.21 building for production...
+frontend-1    | transforming...
+frontend-1    | src/pages/admin/Approvals.jsx (2:23): "api" is not exported by "src/utils/api.js", imported by "src/pages/admin/Approvals.jsx".
+frontend-1    | ✓ 1221 modules transformed.
+frontend-1    | rendering chunks...
+frontend-1    | computing gzip size...
+frontend-1    | dist/index.html                   0.77 kB │ gzip:   0.41 kB
+frontend-1    | dist/assets/index-CeVADbjI.css   24.78 kB │ gzip:   4.98 kB
+frontend-1    | dist/assets/index-icsKi7Lc.js   677.85 kB │ gzip: 196.71 kB
+frontend-1    | 
+frontend-1    | (!) Some chunks are larger than 500 kB after minification. Consider:
+frontend-1    | - Using dynamic import() to code-split the application
+frontend-1    | - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+frontend-1    | - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+frontend-1    | ✓ built in 10.88s
+frontend-1    |  INFO  Accepting connections at http://localhost:5173
+prep_worker-1  | /usr/local/lib/python3.11/site-packages/celery/platforms.py:829: SecurityWarning: You're running the worker with superuser privileges: this is
+prep_worker-1  | absolutely not recommended!
+prep_worker-1  | 
+prep_worker-1  | Please specify a different user using the --uid option.
+prep_worker-1  | 
+prep_worker-1  | User information: uid=0 euid=0 gid=0 egid=0
+prep_worker-1  | 
+prep_worker-1  |   warnings.warn(SecurityWarning(ROOT_DISCOURAGED.format(
+prep_worker-1  |  
+prep_worker-1  |  -------------- celery@36c6a28520bb v5.4.0 (opalescent)
+prep_worker-1  | --- ***** ----- 
+prep_worker-1  | -- ******* ---- Linux-6.8.0-31-generic-x86_64-with-glibc2.41 2025-11-06 23:05:52
+prep_worker-1  | - *** --- * --- 
+prep_worker-1  | - ** ---------- [config]
+prep_worker-1  | - ** ---------- .> app:         metastream:0x75be19204810
+prep_worker-1  | - ** ---------- .> transport:   redis://redis:6379/0
+prep_worker-1  | - ** ---------- .> results:     redis://redis:6379/0
+prep_worker-1  | - *** --- * --- .> concurrency: 6 (prefork)
+prep_worker-1  | -- ******* ---- .> task events: OFF (enable -E to monitor tasks in this worker)
+prep_worker-1  | --- ***** ----- 
+prep_worker-1  |  -------------- [queues]
+prep_worker-1  |                 .> prep             exchange=prep(direct) key=prep
+prep_worker-1  |                 
+prep_worker-1  | 
+prep_worker-1  | [tasks]
+prep_worker-1  |   . app.tasks.backup.backup_database
+prep_worker-1  |   . app.tasks.cleanup.cleanup_old_comments
+prep_worker-1  |   . app.tasks.cleanup.cleanup_old_viewers
+prep_worker-1  |   . app.tasks.cleanup.cleanup_rejected_channels
+prep_worker-1  |   . app.tasks.cleanup.cleanup_rejected_videos
+prep_worker-1  |   . app.tasks.comments.auto_approve_comments
+prep_worker-1  |   . app.tasks.stream.check_and_start_streams
+prep_worker-1  |   . app.tasks.stream.check_live_streams
+prep_worker-1  |   . app.tasks.stream.start_stream_task
+prep_worker-1  |   . app.tasks.stream.stop_stream
+prep_worker-1  |   . app.tasks.telegram.notify_new_video
+prep_worker-1  |   . app.tasks.telegram.send_telegram_notification
+prep_worker-1  |   . app.tasks.video.prepare_video
+prep_worker-1  | 
+prep_worker-1  | [2025-11-06 23:05:54,107: WARNING/MainProcess] /usr/local/lib/python3.11/site-packages/celery/worker/consumer/consumer.py:508: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+prep_worker-1  | whether broker connection retries are made during startup in Celery 6.0 and above.
+prep_worker-1  | If you wish to retain the existing behavior for retrying connections on startup,
+prep_worker-1  | you should set broker_connection_retry_on_startup to True.
+prep_worker-1  |   warnings.warn(
+prep_worker-1  | 
+prep_worker-1  | [2025-11-06 23:05:54,196: INFO/MainProcess] Connected to redis://redis:6379/0
+prep_worker-1  | [2025-11-06 23:05:54,198: WARNING/MainProcess] /usr/local/lib/python3.11/site-packages/celery/worker/consumer/consumer.py:508: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+prep_worker-1  | whether broker connection retries are made during startup in Celery 6.0 and above.
+prep_worker-1  | If you wish to retain the existing behavior for retrying connections on startup,
+prep_worker-1  | you should set broker_connection_retry_on_startup to True.
+prep_worker-1  |   warnings.warn(
+prep_worker-1  | 
+prep_worker-1  | [2025-11-06 23:05:54,210: INFO/MainProcess] mingle: searching for neighbors
+prep_worker-1  | [2025-11-06 23:05:55,225: INFO/MainProcess] mingle: all alone
+prep_worker-1  | [2025-11-06 23:05:55,260: INFO/MainProcess] celery@36c6a28520bb ready.
+prep_worker-1  | [2025-11-06 23:05:56,990: INFO/MainProcess] Events of group {task} enabled by remote.
+db-1           | The files belonging to this database system will be owned by user "postgres".
+db-1           | This user must also own the server process.
+db-1           | 
+db-1           | The database cluster will be initialized with this locale configuration:
+web-1          | [2025-11-06 23:05:53 +0330] [1] [INFO] Starting gunicorn 21.2.0
+web-1          | [2025-11-06 23:05:53 +0330] [1] [INFO] Listening at: http://0.0.0.0:8000 (1)
+db-1           |   provider:    libc
+db-1           |   LC_COLLATE:  C
+db-1           |   LC_CTYPE:    C
+db-1           |   LC_MESSAGES: en_US.utf8
+db-1           |   LC_MONETARY: en_US.utf8
+db-1           |   LC_NUMERIC:  en_US.utf8
+db-1           |   LC_TIME:     en_US.utf8
+db-1           | The default text search configuration will be set to "english".
+db-1           | 
+db-1           | Data page checksums are disabled.
+db-1           | 
+db-1           | fixing permissions on existing directory /var/lib/postgresql/data ... ok
+db-1           | creating subdirectories ... ok
+db-1           | selecting dynamic shared memory implementation ... posix
+db-1           | selecting default max_connections ... 100
+db-1           | selecting default shared_buffers ... 128MB
+db-1           | selecting default time zone ... UTC
+db-1           | creating configuration files ... ok
+db-1           | running bootstrap script ... ok
+db-1           | sh: locale: not found
+db-1           | 2025-11-06 19:35:45.635 UTC [36] WARNING:  no usable system locales were found
+db-1           | performing post-bootstrap initialization ... ok
+db-1           | syncing data to disk ... ok
+db-1           | 
+db-1           | 
+db-1           | Success. You can now start the database server using:
+db-1           | 
+db-1           |     pg_ctl -D /var/lib/postgresql/data -l logfile start
+db-1           | 
+db-1           | initdb: warning: enabling "trust" authentication for local connections
+db-1           | initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+db-1           | waiting for server to start....2025-11-06 19:35:46.803 UTC [42] LOG:  starting PostgreSQL 15.14 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+db-1           | 2025-11-06 19:35:46.804 UTC [42] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+db-1           | 2025-11-06 19:35:46.813 UTC [45] LOG:  database system was shut down at 2025-11-06 19:35:46 UTC
+db-1           | 2025-11-06 19:35:46.825 UTC [42] LOG:  database system is ready to accept connections
+db-1           |  done
+db-1           | server started
+db-1           | CREATE DATABASE
+db-1           | 
+db-1           | 
+db-1           | /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+db-1           | 
+db-1           | waiting for server to shut down...2025-11-06 19:35:47.011 UTC [42] LOG:  received fast shutdown request
+db-1           | .2025-11-06 19:35:47.014 UTC [42] LOG:  aborting any active transactions
+db-1           | 2025-11-06 19:35:47.022 UTC [42] LOG:  background worker "logical replication launcher" (PID 48) exited with exit code 1
+db-1           | 2025-11-06 19:35:47.024 UTC [43] LOG:  shutting down
+db-1           | 2025-11-06 19:35:47.026 UTC [43] LOG:  checkpoint starting: shutdown immediate
+db-1           | 2025-11-06 19:35:47.117 UTC [43] LOG:  checkpoint complete: wrote 921 buffers (5.6%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.056 s, sync=0.031 s, total=0.094 s; sync files=301, longest=0.002 s, average=0.001 s; distance=4238 kB, estimate=4238 kB
+db-1           | 2025-11-06 19:35:47.131 UTC [42] LOG:  database system is shut down
+db-1           |  done
+db-1           | server stopped
+db-1           | 
+db-1           | PostgreSQL init process complete; ready for start up.
+db-1           | 
+db-1           | 2025-11-06 19:35:47.254 UTC [1] LOG:  starting PostgreSQL 15.14 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+db-1           | 2025-11-06 19:35:47.254 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+db-1           | 2025-11-06 19:35:47.254 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+db-1           | 2025-11-06 19:35:47.258 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+db-1           | 2025-11-06 19:35:47.267 UTC [58] LOG:  database system was shut down at 2025-11-06 19:35:47 UTC
+db-1           | 2025-11-06 19:35:47.276 UTC [1] LOG:  database system is ready to accept connections
+db-1           | 2025-11-06 19:35:54.254 UTC [73] ERROR:  duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+db-1           | 2025-11-06 19:35:54.254 UTC [73] DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+db-1           | 2025-11-06 19:35:54.254 UTC [73] STATEMENT:  
+db-1           | 	CREATE TABLE users (
+db-1           | 		id SERIAL NOT NULL, 
+db-1           | 		email VARCHAR(255), 
+db-1           | 		phone VARCHAR(20), 
+db-1           | 		password_hash VARCHAR(255), 
+db-1           | 		name VARCHAR(255) NOT NULL, 
+db-1           | 		role VARCHAR(20) NOT NULL, 
+db-1           | 		phone_verified BOOLEAN NOT NULL, 
+db-1           | 		is_active BOOLEAN NOT NULL, 
+db-1           | 		api_key VARCHAR(255), 
+db-1           | 		created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+db-1           | 		expires_at TIMESTAMP WITHOUT TIME ZONE, 
+db-1           | 		last_login TIMESTAMP WITHOUT TIME ZONE, 
+db-1           | 		PRIMARY KEY (id), 
+db-1           | 		UNIQUE (api_key)
+db-1           | 	)
+db-1           | 	
+db-1           | 	
+db-1           | 2025-11-06 19:35:54.254 UTC [71] ERROR:  duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+db-1           | 2025-11-06 19:35:54.254 UTC [71] DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+db-1           | 2025-11-06 19:35:54.254 UTC [71] STATEMENT:  
+db-1           | 	CREATE TABLE users (
+db-1           | 		id SERIAL NOT NULL, 
+db-1           | 		email VARCHAR(255), 
+db-1           | 		phone VARCHAR(20), 
+db-1           | 		password_hash VARCHAR(255), 
+db-1           | 		name VARCHAR(255) NOT NULL, 
+db-1           | 		role VARCHAR(20) NOT NULL, 
+db-1           | 		phone_verified BOOLEAN NOT NULL, 
+db-1           | 		is_active BOOLEAN NOT NULL, 
+db-1           | 		api_key VARCHAR(255), 
+db-1           | 		created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+db-1           | 		expires_at TIMESTAMP WITHOUT TIME ZONE, 
+db-1           | 		last_login TIMESTAMP WITHOUT TIME ZONE, 
+db-1           | 		PRIMARY KEY (id), 
+db-1           | 		UNIQUE (api_key)
+db-1           | 	)
+db-1           | 	
+db-1           | 	
+db-1           | 2025-11-06 19:35:54.255 UTC [70] ERROR:  duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+db-1           | 2025-11-06 19:35:54.255 UTC [70] DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+db-1           | 2025-11-06 19:35:54.255 UTC [70] STATEMENT:  
+db-1           | 	CREATE TABLE users (
+db-1           | 		id SERIAL NOT NULL, 
+db-1           | 		email VARCHAR(255), 
+db-1           | 		phone VARCHAR(20), 
+db-1           | 		password_hash VARCHAR(255), 
+db-1           | 		name VARCHAR(255) NOT NULL, 
+db-1           | 		role VARCHAR(20) NOT NULL, 
+db-1           | 		phone_verified BOOLEAN NOT NULL, 
+db-1           | 		is_active BOOLEAN NOT NULL, 
+db-1           | 		api_key VARCHAR(255), 
+db-1           | 		created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+db-1           | 		expires_at TIMESTAMP WITHOUT TIME ZONE, 
+db-1           | 		last_login TIMESTAMP WITHOUT TIME ZONE, 
+db-1           | 		PRIMARY KEY (id), 
+db-1           | 		UNIQUE (api_key)
+db-1           | 	)
+db-1           | 	
+db-1           | 	
+db-1           | 2025-11-06 19:35:54.255 UTC [72] ERROR:  duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+db-1           | 2025-11-06 19:35:54.255 UTC [72] DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+db-1           | 2025-11-06 19:35:54.255 UTC [72] STATEMENT:  
+db-1           | 	CREATE TABLE users (
+db-1           | 		id SERIAL NOT NULL, 
+db-1           | 		email VARCHAR(255), 
+db-1           | 		phone VARCHAR(20), 
+db-1           | 		password_hash VARCHAR(255), 
+db-1           | 		name VARCHAR(255) NOT NULL, 
+db-1           | 		role VARCHAR(20) NOT NULL, 
+db-1           | 		phone_verified BOOLEAN NOT NULL, 
+db-1           | 		is_active BOOLEAN NOT NULL, 
+db-1           | 		api_key VARCHAR(255), 
+db-1           | 		created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+db-1           | 		expires_at TIMESTAMP WITHOUT TIME ZONE, 
+db-1           | 		last_login TIMESTAMP WITHOUT TIME ZONE, 
+db-1           | 		PRIMARY KEY (id), 
+db-1           | 		UNIQUE (api_key)
+db-1           | 	)
+stream_worker-1  | /usr/local/lib/python3.11/site-packages/celery/platforms.py:829: SecurityWarning: You're running the worker with superuser privileges: this is
+stream_worker-1  | absolutely not recommended!
+web-1            | [2025-11-06 23:05:53 +0330] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker
+web-1            | [2025-11-06 23:05:53 +0330] [7] [INFO] Booting worker with pid: 7
+web-1            | [2025-11-06 23:05:53 +0330] [8] [INFO] Booting worker with pid: 8
+web-1            | [2025-11-06 23:05:53 +0330] [9] [INFO] Booting worker with pid: 9
+web-1            | [2025-11-06 23:05:53 +0330] [10] [INFO] Booting worker with pid: 10
+stream_worker-1  | 
+stream_worker-1  | Please specify a different user using the --uid option.
+stream_worker-1  | 
+stream_worker-1  | User information: uid=0 euid=0 gid=0 egid=0
+db-1             | 	
+db-1             | 	
+db-1             | 2025-11-06 19:35:54.256 UTC [74] ERROR:  duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+db-1             | 2025-11-06 19:35:54.256 UTC [74] DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+db-1             | 2025-11-06 19:35:54.256 UTC [74] STATEMENT:  
+db-1             | 	CREATE TABLE users (
+stream_worker-1  | 
+web-1            | [2025-11-06 23:05:53 +0330] [7] [INFO] Started server process [7]
+stream_worker-1  |   warnings.warn(SecurityWarning(ROOT_DISCOURAGED.format(
+stream_worker-1  |  
+web-1            | [2025-11-06 23:05:53 +0330] [7] [INFO] Waiting for application startup.
+web-1            | [2025-11-06 23:05:53 +0330] [8] [INFO] Started server process [8]
+web-1            | [2025-11-06 23:05:53 +0330] [8] [INFO] Waiting for application startup.
+web-1            | [2025-11-06 23:05:53 +0330] [9] [INFO] Started server process [9]
+web-1            | [2025-11-06 23:05:53 +0330] [9] [INFO] Waiting for application startup.
+stream_worker-1  |  -------------- celery@1ca305f25011 v5.4.0 (opalescent)
+stream_worker-1  | --- ***** ----- 
+web-1            | [2025-11-06 23:05:53 +0330] [11] [INFO] Booting worker with pid: 11
+stream_worker-1  | -- ******* ---- Linux-6.8.0-31-generic-x86_64-with-glibc2.41 2025-11-06 23:05:52
+stream_worker-1  | - *** --- * --- 
+stream_worker-1  | - ** ---------- [config]
+web-1            | [2025-11-06 23:05:53 +0330] [12] [INFO] Booting worker with pid: 12
+stream_worker-1  | - ** ---------- .> app:         metastream:0x7f4f3c770950
+stream_worker-1  | - ** ---------- .> transport:   redis://redis:6379/0
+stream_worker-1  | - ** ---------- .> results:     redis://redis:6379/0
+stream_worker-1  | - *** --- * --- .> concurrency: 6 (prefork)
+db-1             | 		id SERIAL NOT NULL, 
+stream_worker-1  | -- ******* ---- .> task events: OFF (enable -E to monitor tasks in this worker)
+db-1             | 		email VARCHAR(255), 
+stream_worker-1  | --- ***** ----- 
+stream_worker-1  |  -------------- [queues]
+stream_worker-1  |                 .> default          exchange=default(direct) key=default
+db-1             | 		phone VARCHAR(20), 
+stream_worker-1  |                 .> stream           exchange=stream(direct) key=stream
+db-1             | 		password_hash VARCHAR(255), 
+stream_worker-1  | 
+stream_worker-1  | [tasks]
+stream_worker-1  |   . app.tasks.backup.backup_database
+web-1            | [2025-11-06 23:05:53 +0330] [10] [INFO] Started server process [10]
+web-1            | [2025-11-06 23:05:53 +0330] [10] [INFO] Waiting for application startup.
+web-1            | [2025-11-06 23:05:53 +0330] [12] [INFO] Started server process [12]
+web-1            | [2025-11-06 23:05:53 +0330] [12] [INFO] Waiting for application startup.
+web-1            | [2025-11-06 23:05:53 +0330] [11] [INFO] Started server process [11]
+web-1            | [2025-11-06 23:05:53 +0330] [11] [INFO] Waiting for application startup.
+web-1            | [2025-11-06 23:05:54 +0330] [8] [ERROR] Traceback (most recent call last):
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+web-1            |     self.dialect.do_execute(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+web-1            |     cursor.execute(statement, parameters)
+web-1            | psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+web-1            | DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+web-1            | 
+web-1            | 
+web-1            | The above exception was the direct cause of the following exception:
+web-1            | 
+web-1            | Traceback (most recent call last):
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 732, in lifespan
+web-1            |     async with self.lifespan_context(app) as maybe_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+db-1             | 		name VARCHAR(255) NOT NULL, 
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+db-1             | 		role VARCHAR(20) NOT NULL, 
+db-1             | 		phone_verified BOOLEAN NOT NULL, 
+db-1             | 		is_active BOOLEAN NOT NULL, 
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+stream_worker-1  |   . app.tasks.cleanup.cleanup_old_comments
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+db-1             | 		api_key VARCHAR(255), 
+db-1             | 		created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+db-1             | 		expires_at TIMESTAMP WITHOUT TIME ZONE, 
+stream_worker-1  |   . app.tasks.cleanup.cleanup_old_viewers
+stream_worker-1  |   . app.tasks.cleanup.cleanup_rejected_channels
+stream_worker-1  |   . app.tasks.cleanup.cleanup_rejected_videos
+stream_worker-1  |   . app.tasks.comments.auto_approve_comments
+stream_worker-1  |   . app.tasks.stream.check_and_start_streams
+stream_worker-1  |   . app.tasks.stream.check_live_streams
+stream_worker-1  |   . app.tasks.stream.start_stream_task
+stream_worker-1  |   . app.tasks.stream.stop_stream
+stream_worker-1  |   . app.tasks.telegram.notify_new_video
+stream_worker-1  |   . app.tasks.telegram.send_telegram_notification
+stream_worker-1  |   . app.tasks.video.prepare_video
+stream_worker-1  | 
+stream_worker-1  | [2025-11-06 23:05:54,269: WARNING/MainProcess] /usr/local/lib/python3.11/site-packages/celery/worker/consumer/consumer.py:508: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+stream_worker-1  | whether broker connection retries are made during startup in Celery 6.0 and above.
+stream_worker-1  | If you wish to retain the existing behavior for retrying connections on startup,
+stream_worker-1  | you should set broker_connection_retry_on_startup to True.
+stream_worker-1  |   warnings.warn(
+stream_worker-1  | 
+stream_worker-1  | [2025-11-06 23:05:54,296: INFO/MainProcess] Connected to redis://redis:6379/0
+stream_worker-1  | [2025-11-06 23:05:54,298: WARNING/MainProcess] /usr/local/lib/python3.11/site-packages/celery/worker/consumer/consumer.py:508: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+db-1             | 		last_login TIMESTAMP WITHOUT TIME ZONE, 
+db-1             | 		PRIMARY KEY (id), 
+db-1             | 		UNIQUE (api_key)
+db-1             | 	)
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+db-1             | 	
+web-1            |     return await anext(self.gen)
+stream_worker-1  | whether broker connection retries are made during startup in Celery 6.0 and above.
+stream_worker-1  | If you wish to retain the existing behavior for retrying connections on startup,
+stream_worker-1  | you should set broker_connection_retry_on_startup to True.
+stream_worker-1  |   warnings.warn(
+stream_worker-1  | 
+stream_worker-1  | [2025-11-06 23:05:54,302: INFO/MainProcess] mingle: searching for neighbors
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+stream_worker-1  | [2025-11-06 23:05:55,319: INFO/MainProcess] mingle: all alone
+stream_worker-1  | [2025-11-06 23:05:55,379: INFO/MainProcess] celery@1ca305f25011 ready.
+stream_worker-1  | [2025-11-06 23:05:56,990: INFO/MainProcess] Events of group {task} enabled by remote.
+stream_worker-1  | [2025-11-06 23:05:57,742: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[d2dbc694-46d0-4a29-9d99-da4ab23054a2] received
+stream_worker-1  | [2025-11-06 23:05:57,858: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[d2dbc694-46d0-4a29-9d99-da4ab23054a2] succeeded in 0.11156995099736378s: None
+stream_worker-1  | [2025-11-06 23:06:02,726: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[8538707f-a9fb-479d-8d02-a863d1ff2bb7] received
+stream_worker-1  | [2025-11-06 23:06:02,739: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[8538707f-a9fb-479d-8d02-a863d1ff2bb7] succeeded in 0.008486734994221479s: None
+stream_worker-1  | [2025-11-06 23:06:07,729: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[ebda5351-9723-48f3-a2e1-12681d2a07da] received
+stream_worker-1  | [2025-11-06 23:06:07,741: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[ebda5351-9723-48f3-a2e1-12681d2a07da] succeeded in 0.008698162011569366s: None
+stream_worker-1  | [2025-11-06 23:06:12,728: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[95e14d7d-2729-4a8b-9f7d-8e0988fd99e3] received
+stream_worker-1  | [2025-11-06 23:06:12,738: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[95e14d7d-2729-4a8b-9f7d-8e0988fd99e3] succeeded in 0.006022675021085888s: None
+stream_worker-1  | [2025-11-06 23:06:17,727: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[0a250b2e-5b8c-4702-b19e-8a8b0255dfbb] received
+stream_worker-1  | [2025-11-06 23:06:17,734: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[0a250b2e-5b8c-4702-b19e-8a8b0255dfbb] succeeded in 0.0054897230002097785s: None
+stream_worker-1  | [2025-11-06 23:06:22,737: INFO/MainProcess] Task app.tasks.stream.check_and_start_streams[a6a1ab8d-ad16-4681-8702-f7136d52fbf7] received
+stream_worker-1  | [2025-11-06 23:06:22,746: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[5ccfb985-5159-457c-a9df-f9438d2d52a7] received
+stream_worker-1  | [2025-11-06 23:06:22,772: WARNING/ForkPoolWorker-4] [STREAM] Checking streams at 2025-11-06 23:06:22.744758+03:30. Found 0 active scheduled streams
+stream_worker-1  | [2025-11-06 23:06:22,775: INFO/ForkPoolWorker-4] Task app.tasks.stream.check_and_start_streams[a6a1ab8d-ad16-4681-8702-f7136d52fbf7] succeeded in 0.03139872901374474s: {'checked': 0, 'started': 0}
+stream_worker-1  | [2025-11-06 23:06:22,859: INFO/ForkPoolWorker-5] Task app.tasks.comments.auto_approve_comments[5ccfb985-5159-457c-a9df-f9438d2d52a7] succeeded in 0.1022775849851314s: None
+stream_worker-1  | [2025-11-06 23:06:27,748: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[af652ff9-c246-43ce-baf6-9587d4e746f4] received
+stream_worker-1  | [2025-11-06 23:06:27,801: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[af652ff9-c246-43ce-baf6-9587d4e746f4] succeeded in 0.01815644500311464s: None
+stream_worker-1  | [2025-11-06 23:06:32,742: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[fe7a1da5-ed4b-48ee-b987-6cd4c14aff00] received
+stream_worker-1  | [2025-11-06 23:06:32,750: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[fe7a1da5-ed4b-48ee-b987-6cd4c14aff00] succeeded in 0.005941101000644267s: None
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+stream_worker-1  | [2025-11-06 23:06:37,741: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[40d26b2f-2f55-4033-b869-612184915d7d] received
+stream_worker-1  | [2025-11-06 23:06:37,757: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[40d26b2f-2f55-4033-b869-612184915d7d] succeeded in 0.008364420005818829s: None
+stream_worker-1  | [2025-11-06 23:06:42,741: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[5242662c-9de7-4f45-a79a-4ad1acfed797] received
+stream_worker-1  | [2025-11-06 23:06:42,750: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[5242662c-9de7-4f45-a79a-4ad1acfed797] succeeded in 0.005925071018282324s: None
+stream_worker-1  | [2025-11-06 23:06:47,743: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[d1d21086-37fc-4d6c-805b-69cb175e91bc] received
+stream_worker-1  | [2025-11-06 23:06:47,749: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[d1d21086-37fc-4d6c-805b-69cb175e91bc] succeeded in 0.004974778014002368s: None
+stream_worker-1  | [2025-11-06 23:06:52,729: INFO/MainProcess] Task app.tasks.stream.check_live_streams[86062b07-72f2-4f7b-abeb-d3a693c03bc6] received
+stream_worker-1  | [2025-11-06 23:06:52,732: INFO/MainProcess] Task app.tasks.stream.check_and_start_streams[4f5fccb3-424b-445a-91d2-25bef7878a2c] received
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+db-1             | 	
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 608, in __aenter__
+web-1            |     await self._router.startup()
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 709, in startup
+web-1            |     await handler()
+web-1            |   File "/app/app/main.py", line 73, in startup
+web-1            |     Base.metadata.create_all(bind=engine)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/schema.py", line 5868, in create_all
+web-1            |     bind._run_ddl_visitor(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 3253, in _run_ddl_visitor
+web-1            |     conn._run_ddl_visitor(visitorcallable, element, **kwargs)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2459, in _run_ddl_visitor
+web-1            |     visitorcallable(self.dialect, self, **kwargs).traverse_single(element)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/visitors.py", line 664, in traverse_single
+web-1            |     return meth(obj, **kw)
+web-1            |            ^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 918, in visit_metadata
+web-1            |     self.traverse_single(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/visitors.py", line 664, in traverse_single
+web-1            |     return meth(obj, **kw)
+web-1            |            ^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 956, in visit_table
+web-1            |     )._invoke_with(self.connection)
+web-1            |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 314, in _invoke_with
+web-1            |     return bind.execute(self)
+web-1            |            ^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1418, in execute
+db-1             | 2025-11-06 19:35:54.361 UTC [69] ERROR:  column "requires_otp" of relation "streams" does not exist
+db-1             | 2025-11-06 19:35:54.361 UTC [69] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+web-1            |     return meth(
+web-1            |            ^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 180, in _execute_on_connection
+web-1            |     return connection._execute_ddl(
+db-1             | 	                ALTER COLUMN requires_otp DROP NOT NULL,
+db-1             | 	                ALTER COLUMN requires_otp SET DEFAULT FALSE
+db-1             | 	            
+db-1             | 2025-11-06 19:35:54.362 UTC [69] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:35:54.362 UTC [69] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN otp_verification_required DROP NOT NULL,
+db-1             | 	                ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+db-1             | 	            
+db-1             | 2025-11-06 19:35:54.363 UTC [69] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:35:54.363 UTC [69] STATEMENT:  ALTER TABLE streams DROP COLUMN IF EXISTS end_time
+db-1             | 2025-11-06 19:35:54.363 UTC [69] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:35:54.363 UTC [69] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN share_link DROP NOT NULL
+db-1             | 	            
+db-1             | 2025-11-06 19:35:54.364 UTC [69] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:35:54.364 UTC [69] STATEMENT:  
+db-1             | 	            SELECT column_name 
+db-1             | 	            FROM information_schema.columns 
+db-1             | 	            WHERE table_name='comments' AND column_name='last_name'
+db-1             | 	        
+db-1             | 2025-11-06 19:35:59.981 UTC [84] ERROR:  column "requires_otp" of relation "streams" does not exist
+db-1             | 2025-11-06 19:35:59.981 UTC [84] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN requires_otp DROP NOT NULL,
+db-1             | 	                ALTER COLUMN requires_otp SET DEFAULT FALSE
+db-1             | 	            
+db-1             | 2025-11-06 19:35:59.990 UTC [84] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:35:59.990 UTC [84] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN otp_verification_required DROP NOT NULL,
+db-1             | 	                ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+db-1             | 	            
+db-1             | 2025-11-06 19:35:59.991 UTC [84] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:35:59.991 UTC [84] STATEMENT:  ALTER TABLE streams DROP COLUMN IF EXISTS end_time
+db-1             | 2025-11-06 19:35:59.993 UTC [84] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:35:59.993 UTC [84] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN share_link DROP NOT NULL
+db-1             | 	            
+db-1             | 2025-11-06 19:35:59.995 UTC [84] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:35:59.995 UTC [84] STATEMENT:  
+db-1             | 	            SELECT column_name 
+db-1             | 	            FROM information_schema.columns 
+db-1             | 	            WHERE table_name='comments' AND column_name='last_name'
+db-1             | 	        
+db-1             | 2025-11-06 19:35:59.996 UTC [85] ERROR:  column "requires_otp" of relation "streams" does not exist
+db-1             | 2025-11-06 19:35:59.996 UTC [85] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN requires_otp DROP NOT NULL,
+db-1             | 	                ALTER COLUMN requires_otp SET DEFAULT FALSE
+db-1             | 	            
+db-1             | 2025-11-06 19:35:59.996 UTC [85] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:35:59.996 UTC [85] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN otp_verification_required DROP NOT NULL,
+db-1             | 	                ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+db-1             | 	            
+db-1             | 2025-11-06 19:35:59.997 UTC [85] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+stream_worker-1  | [2025-11-06 23:06:52,741: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[9598e745-5d45-432a-b73c-7c0d439acc38] received
+stream_worker-1  | [2025-11-06 23:06:52,763: INFO/ForkPoolWorker-4] Task app.tasks.stream.check_live_streams[86062b07-72f2-4f7b-abeb-d3a693c03bc6] succeeded in 0.029802308010403067s: {'checked': 0, 'ended': 0, 'cancelled': 0}
+stream_worker-1  | [2025-11-06 23:06:52,782: WARNING/ForkPoolWorker-5] [STREAM] Checking streams at 2025-11-06 23:06:52.739620+03:30. Found 0 active scheduled streams
+stream_worker-1  | [2025-11-06 23:06:52,791: INFO/ForkPoolWorker-5] Task app.tasks.stream.check_and_start_streams[4f5fccb3-424b-445a-91d2-25bef7878a2c] succeeded in 0.05468423300771974s: {'checked': 0, 'started': 0}
+stream_worker-1  | [2025-11-06 23:06:52,847: INFO/ForkPoolWorker-1] Task app.tasks.comments.auto_approve_comments[9598e745-5d45-432a-b73c-7c0d439acc38] succeeded in 0.09982636201311834s: None
+stream_worker-1  | [2025-11-06 23:06:57,741: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[97b5d12e-e648-4e19-acae-c5a51c3df286] received
+db-1             | 2025-11-06 19:35:59.997 UTC [85] STATEMENT:  ALTER TABLE streams DROP COLUMN IF EXISTS end_time
+stream_worker-1  | [2025-11-06 23:06:57,751: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[97b5d12e-e648-4e19-acae-c5a51c3df286] succeeded in 0.006557785003678873s: None
+db-1             | 2025-11-06 19:35:59.997 UTC [85] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:35:59.997 UTC [85] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN share_link DROP NOT NULL
+db-1             | 	            
+db-1             | 2025-11-06 19:35:59.998 UTC [85] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:35:59.998 UTC [85] STATEMENT:  
+db-1             | 	            SELECT column_name 
+db-1             | 	            FROM information_schema.columns 
+stream_worker-1  | [2025-11-06 23:07:02,744: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[485099ae-7ba8-490c-8c5b-89258f945518] received
+db-1             | 	            WHERE table_name='comments' AND column_name='last_name'
+db-1             | 	        
+db-1             | 2025-11-06 19:36:00.106 UTC [86] ERROR:  column "requires_otp" of relation "streams" does not exist
+db-1             | 2025-11-06 19:36:00.106 UTC [86] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+stream_worker-1  | [2025-11-06 23:07:02,755: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[485099ae-7ba8-490c-8c5b-89258f945518] succeeded in 0.007906910992460325s: None
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1529, in _execute_ddl
+stream_worker-1  | [2025-11-06 23:07:07,742: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[8ae56137-0379-4307-be34-6efd4f442004] received
+stream_worker-1  | [2025-11-06 23:07:07,749: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[8ae56137-0379-4307-be34-6efd4f442004] succeeded in 0.0038485469995066524s: None
+stream_worker-1  | [2025-11-06 23:07:12,743: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[18aacab5-ed65-457f-8d39-67fc4fb1345c] received
+db-1             | 	                ALTER COLUMN requires_otp DROP NOT NULL,
+stream_worker-1  | [2025-11-06 23:07:12,750: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[18aacab5-ed65-457f-8d39-67fc4fb1345c] succeeded in 0.005134531995281577s: None
+db-1             | 	                ALTER COLUMN requires_otp SET DEFAULT FALSE
+db-1             | 	            
+stream_worker-1  | [2025-11-06 23:07:17,743: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[590e000d-1b33-4e93-92e5-5831a8a11487] received
+stream_worker-1  | [2025-11-06 23:07:17,752: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[590e000d-1b33-4e93-92e5-5831a8a11487] succeeded in 0.005510774994036183s: None
+stream_worker-1  | [2025-11-06 23:07:22,732: INFO/MainProcess] Task app.tasks.stream.check_and_start_streams[6d964b33-2c65-4ca1-a4ec-12d9a60986c9] received
+stream_worker-1  | [2025-11-06 23:07:22,740: WARNING/ForkPoolWorker-4] [STREAM] Checking streams at 2025-11-06 23:07:22.735544+03:30. Found 0 active scheduled streams
+stream_worker-1  | [2025-11-06 23:07:22,741: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[7afd0cd4-543b-4c51-ad9a-f63f6f661e8d] received
+web-1            |     ret = self._execute_context(
+web-1            |           ^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+web-1            |     return self._exec_single_context(
+db-1             | 2025-11-06 19:36:00.108 UTC [86] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.108 UTC [86] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN otp_verification_required DROP NOT NULL,
+db-1             | 	                ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+db-1             | 	            
+db-1             | 2025-11-06 19:36:00.108 UTC [86] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+web-1            |     self._handle_dbapi_exception(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+web-1            |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+web-1            |     self.dialect.do_execute(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+web-1            |     cursor.execute(statement, parameters)
+db-1             | 2025-11-06 19:36:00.108 UTC [86] STATEMENT:  ALTER TABLE streams DROP COLUMN IF EXISTS end_time
+db-1             | 2025-11-06 19:36:00.109 UTC [86] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.109 UTC [86] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN share_link DROP NOT NULL
+db-1             | 	            
+db-1             | 2025-11-06 19:36:00.110 UTC [86] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.110 UTC [86] STATEMENT:  
+db-1             | 	            SELECT column_name 
+db-1             | 	            FROM information_schema.columns 
+db-1             | 	            WHERE table_name='comments' AND column_name='last_name'
+db-1             | 	        
+db-1             | 2025-11-06 19:36:00.178 UTC [87] ERROR:  column "requires_otp" of relation "streams" does not exist
+db-1             | 2025-11-06 19:36:00.178 UTC [87] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN requires_otp DROP NOT NULL,
+db-1             | 	                ALTER COLUMN requires_otp SET DEFAULT FALSE
+db-1             | 	            
+db-1             | 2025-11-06 19:36:00.180 UTC [87] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.180 UTC [87] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN otp_verification_required DROP NOT NULL,
+db-1             | 	                ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+db-1             | 	            
+web-1            | sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+stream_worker-1  | [2025-11-06 23:07:22,743: INFO/ForkPoolWorker-4] Task app.tasks.stream.check_and_start_streams[6d964b33-2c65-4ca1-a4ec-12d9a60986c9] succeeded in 0.008177532989066094s: {'checked': 0, 'started': 0}
+web-1            | DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+stream_worker-1  | [2025-11-06 23:07:22,751: INFO/ForkPoolWorker-5] Task app.tasks.comments.auto_approve_comments[7afd0cd4-543b-4c51-ad9a-f63f6f661e8d] succeeded in 0.008629945979919285s: None
+stream_worker-1  | [2025-11-06 23:07:27,743: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[ce1b9e9e-d065-45e5-925e-95a0b1b1e4e9] received
+stream_worker-1  | [2025-11-06 23:07:27,750: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[ce1b9e9e-d065-45e5-925e-95a0b1b1e4e9] succeeded in 0.004368221998447552s: None
+stream_worker-1  | [2025-11-06 23:07:32,744: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[fe529ad0-e663-497c-984f-cd32da368501] received
+stream_worker-1  | [2025-11-06 23:07:32,754: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[fe529ad0-e663-497c-984f-cd32da368501] succeeded in 0.007484236994059756s: None
+stream_worker-1  | [2025-11-06 23:07:37,742: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[40ec460c-4e51-4014-844b-f3db181e5779] received
+stream_worker-1  | [2025-11-06 23:07:37,753: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[40ec460c-4e51-4014-844b-f3db181e5779] succeeded in 0.006676725985016674s: None
+stream_worker-1  | [2025-11-06 23:07:42,742: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[a455c283-9c9a-402a-b995-9f5636bee1b3] received
+stream_worker-1  | [2025-11-06 23:07:42,751: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[a455c283-9c9a-402a-b995-9f5636bee1b3] succeeded in 0.0059884749935008585s: None
+stream_worker-1  | [2025-11-06 23:07:47,743: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[aeeab119-9271-4725-adea-c438c86788d4] received
+stream_worker-1  | [2025-11-06 23:07:47,750: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[aeeab119-9271-4725-adea-c438c86788d4] succeeded in 0.004664840002078563s: None
+stream_worker-1  | [2025-11-06 23:07:52,728: INFO/MainProcess] Task app.tasks.stream.check_live_streams[ccf148aa-c935-42d6-afc3-a32eb5d84dd4] received
+stream_worker-1  | [2025-11-06 23:07:52,733: INFO/MainProcess] Task app.tasks.stream.check_and_start_streams[8d50cff9-d191-45e6-9a1c-d43a4db3f9e1] received
+stream_worker-1  | [2025-11-06 23:07:52,741: WARNING/ForkPoolWorker-5] [STREAM] Checking streams at 2025-11-06 23:07:52.735776+03:30. Found 0 active scheduled streams
+web-1            | 
+web-1            | [SQL: 
+web-1            | CREATE TABLE users (
+web-1            | 	id SERIAL NOT NULL, 
+web-1            | 	email VARCHAR(255), 
+web-1            | 	phone VARCHAR(20), 
+web-1            | 	password_hash VARCHAR(255), 
+web-1            | 	name VARCHAR(255) NOT NULL, 
+web-1            | 	role VARCHAR(20) NOT NULL, 
+web-1            | 	phone_verified BOOLEAN NOT NULL, 
+web-1            | 	is_active BOOLEAN NOT NULL, 
+web-1            | 	api_key VARCHAR(255), 
+web-1            | 	created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+web-1            | 	expires_at TIMESTAMP WITHOUT TIME ZONE, 
+web-1            | 	last_login TIMESTAMP WITHOUT TIME ZONE, 
+web-1            | 	PRIMARY KEY (id), 
+web-1            | 	UNIQUE (api_key)
+web-1            | )
+web-1            | 
+web-1            | ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/gkpj)
+web-1            | 
+web-1            | [2025-11-06 23:05:54 +0330] [8] [ERROR] Application startup failed. Exiting.
+web-1            | [2025-11-06 23:05:54 +0330] [8] [INFO] Worker exiting (pid: 8)
+web-1            | [2025-11-06 23:05:54 +0330] [10] [ERROR] Traceback (most recent call last):
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+web-1            |     self.dialect.do_execute(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+web-1            |     cursor.execute(statement, parameters)
+web-1            | psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+web-1            | DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+web-1            | 
+web-1            | 
+db-1             | 2025-11-06 19:36:00.181 UTC [87] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.181 UTC [87] STATEMENT:  ALTER TABLE streams DROP COLUMN IF EXISTS end_time
+db-1             | 2025-11-06 19:36:00.182 UTC [87] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.182 UTC [87] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN share_link DROP NOT NULL
+db-1             | 	            
+db-1             | 2025-11-06 19:36:00.183 UTC [87] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.183 UTC [87] STATEMENT:  
+db-1             | 	            SELECT column_name 
+db-1             | 	            FROM information_schema.columns 
+db-1             | 	            WHERE table_name='comments' AND column_name='last_name'
+db-1             | 	        
+db-1             | 2025-11-06 19:36:00.261 UTC [97] ERROR:  column "requires_otp" of relation "streams" does not exist
+db-1             | 2025-11-06 19:36:00.261 UTC [97] STATEMENT:  
+web-1            | The above exception was the direct cause of the following exception:
+db-1             | 	                ALTER TABLE streams 
+web-1            | 
+db-1             | 	                ALTER COLUMN requires_otp DROP NOT NULL,
+db-1             | 	                ALTER COLUMN requires_otp SET DEFAULT FALSE
+db-1             | 	            
+web-1            | Traceback (most recent call last):
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 732, in lifespan
+web-1            |     async with self.lifespan_context(app) as maybe_state:
+db-1             | 2025-11-06 19:36:00.262 UTC [97] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.262 UTC [97] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+stream_worker-1  | [2025-11-06 23:07:52,742: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[1773e572-cf4c-4837-ab8c-157df22d1ce2] received
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+stream_worker-1  | [2025-11-06 23:07:52,746: INFO/ForkPoolWorker-5] Task app.tasks.stream.check_and_start_streams[8d50cff9-d191-45e6-9a1c-d43a4db3f9e1] succeeded in 0.011118942988105118s: {'checked': 0, 'started': 0}
+web-1            |     return await anext(self.gen)
+stream_worker-1  | [2025-11-06 23:07:52,749: INFO/ForkPoolWorker-4] Task app.tasks.stream.check_live_streams[ccf148aa-c935-42d6-afc3-a32eb5d84dd4] succeeded in 0.014807501982431859s: {'checked': 0, 'ended': 0, 'cancelled': 0}
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+stream_worker-1  | [2025-11-06 23:07:52,753: INFO/ForkPoolWorker-1] Task app.tasks.comments.auto_approve_comments[1773e572-cf4c-4837-ab8c-157df22d1ce2] succeeded in 0.007504341978346929s: None
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+stream_worker-1  | [2025-11-06 23:07:57,744: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[f902cf70-4bc0-4781-9a79-3e3c89178699] received
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+db-1             | 	                ALTER COLUMN otp_verification_required DROP NOT NULL,
+db-1             | 	                ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+db-1             | 	            
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+db-1             | 2025-11-06 19:36:00.263 UTC [97] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+stream_worker-1  | [2025-11-06 23:07:57,754: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[f902cf70-4bc0-4781-9a79-3e3c89178699] succeeded in 0.006652105017565191s: None
+stream_worker-1  | [2025-11-06 23:08:02,744: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[4bd9986f-8abb-4034-8427-d40234dd4acc] received
+stream_worker-1  | [2025-11-06 23:08:02,751: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[4bd9986f-8abb-4034-8427-d40234dd4acc] succeeded in 0.0037272889749147s: None
+stream_worker-1  | [2025-11-06 23:08:07,744: INFO/MainProcess] Task app.tasks.comments.auto_approve_comments[a98a636a-7982-45fe-8365-eaa446b69b45] received
+stream_worker-1  | [2025-11-06 23:08:07,753: INFO/ForkPoolWorker-4] Task app.tasks.comments.auto_approve_comments[a98a636a-7982-45fe-8365-eaa446b69b45] succeeded in 0.006201897020218894s: None
+db-1             | 2025-11-06 19:36:00.263 UTC [97] STATEMENT:  ALTER TABLE streams DROP COLUMN IF EXISTS end_time
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+db-1             | 2025-11-06 19:36:00.264 UTC [97] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+web-1            |     async with original_context(app) as maybe_original_state:
+db-1             | 2025-11-06 19:36:00.264 UTC [97] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN share_link DROP NOT NULL
+db-1             | 	            
+db-1             | 2025-11-06 19:36:00.264 UTC [97] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.264 UTC [97] STATEMENT:  
+db-1             | 	            SELECT column_name 
+db-1             | 	            FROM information_schema.columns 
+db-1             | 	            WHERE table_name='comments' AND column_name='last_name'
+db-1             | 	        
+db-1             | 2025-11-06 19:36:00.276 UTC [95] ERROR:  column "requires_otp" of relation "streams" does not exist
+db-1             | 2025-11-06 19:36:00.276 UTC [95] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 608, in __aenter__
+web-1            |     await self._router.startup()
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 709, in startup
+web-1            |     await handler()
+web-1            |   File "/app/app/main.py", line 73, in startup
+web-1            |     Base.metadata.create_all(bind=engine)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/schema.py", line 5868, in create_all
+web-1            |     bind._run_ddl_visitor(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 3253, in _run_ddl_visitor
+db-1             | 	                ALTER COLUMN requires_otp DROP NOT NULL,
+db-1             | 	                ALTER COLUMN requires_otp SET DEFAULT FALSE
+db-1             | 	            
+db-1             | 2025-11-06 19:36:00.277 UTC [95] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.277 UTC [95] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN otp_verification_required DROP NOT NULL,
+db-1             | 	                ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+db-1             | 	            
+db-1             | 2025-11-06 19:36:00.277 UTC [95] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.277 UTC [95] STATEMENT:  ALTER TABLE streams DROP COLUMN IF EXISTS end_time
+db-1             | 2025-11-06 19:36:00.277 UTC [95] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.277 UTC [95] STATEMENT:  
+db-1             | 	                ALTER TABLE streams 
+db-1             | 	                ALTER COLUMN share_link DROP NOT NULL
+db-1             | 	            
+db-1             | 2025-11-06 19:36:00.278 UTC [95] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+db-1             | 2025-11-06 19:36:00.278 UTC [95] STATEMENT:  
+db-1             | 	            SELECT column_name 
+db-1             | 	            FROM information_schema.columns 
+db-1             | 	            WHERE table_name='comments' AND column_name='last_name'
+db-1             | 	        
+web-1            |     conn._run_ddl_visitor(visitorcallable, element, **kwargs)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2459, in _run_ddl_visitor
+web-1            |     visitorcallable(self.dialect, self, **kwargs).traverse_single(element)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/visitors.py", line 664, in traverse_single
+web-1            |     return meth(obj, **kw)
+web-1            |            ^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 918, in visit_metadata
+web-1            |     self.traverse_single(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/visitors.py", line 664, in traverse_single
+web-1            |     return meth(obj, **kw)
+web-1            |            ^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 956, in visit_table
+web-1            |     )._invoke_with(self.connection)
+web-1            |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 314, in _invoke_with
+web-1            |     return bind.execute(self)
+web-1            |            ^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1418, in execute
+web-1            |     return meth(
+web-1            |            ^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 180, in _execute_on_connection
+web-1            |     return connection._execute_ddl(
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1529, in _execute_ddl
+web-1            |     ret = self._execute_context(
+web-1            |           ^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+web-1            |     return self._exec_single_context(
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+web-1            |     self._handle_dbapi_exception(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+web-1            |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+web-1            |     self.dialect.do_execute(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+web-1            |     cursor.execute(statement, parameters)
+web-1            | sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+web-1            | DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+web-1            | 
+web-1            | [SQL: 
+web-1            | CREATE TABLE users (
+web-1            | 	id SERIAL NOT NULL, 
+web-1            | 	email VARCHAR(255), 
+web-1            | 	phone VARCHAR(20), 
+web-1            | 	password_hash VARCHAR(255), 
+web-1            | 	name VARCHAR(255) NOT NULL, 
+web-1            | 	role VARCHAR(20) NOT NULL, 
+web-1            | 	phone_verified BOOLEAN NOT NULL, 
+web-1            | 	is_active BOOLEAN NOT NULL, 
+web-1            | 	api_key VARCHAR(255), 
+web-1            | 	created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+web-1            | 	expires_at TIMESTAMP WITHOUT TIME ZONE, 
+web-1            | 	last_login TIMESTAMP WITHOUT TIME ZONE, 
+web-1            | 	PRIMARY KEY (id), 
+web-1            | 	UNIQUE (api_key)
+web-1            | )
+web-1            | 
+web-1            | ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/gkpj)
+web-1            | 
+web-1            | [2025-11-06 23:05:54 +0330] [10] [ERROR] Application startup failed. Exiting.
+web-1            | [2025-11-06 23:05:54 +0330] [10] [INFO] Worker exiting (pid: 10)
+web-1            | [2025-11-06 23:05:54 +0330] [11] [ERROR] Traceback (most recent call last):
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+web-1            |     self.dialect.do_execute(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+web-1            |     cursor.execute(statement, parameters)
+web-1            | psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+web-1            | DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+web-1            | 
+web-1            | 
+web-1            | The above exception was the direct cause of the following exception:
+web-1            | 
+web-1            | Traceback (most recent call last):
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 732, in lifespan
+web-1            |     async with self.lifespan_context(app) as maybe_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 608, in __aenter__
+web-1            |     await self._router.startup()
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 709, in startup
+web-1            |     await handler()
+web-1            |   File "/app/app/main.py", line 73, in startup
+web-1            |     Base.metadata.create_all(bind=engine)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/schema.py", line 5868, in create_all
+web-1            |     bind._run_ddl_visitor(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 3253, in _run_ddl_visitor
+web-1            |     conn._run_ddl_visitor(visitorcallable, element, **kwargs)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2459, in _run_ddl_visitor
+web-1            |     visitorcallable(self.dialect, self, **kwargs).traverse_single(element)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/visitors.py", line 664, in traverse_single
+web-1            |     return meth(obj, **kw)
+web-1            |            ^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 918, in visit_metadata
+web-1            |     self.traverse_single(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/visitors.py", line 664, in traverse_single
+web-1            |     return meth(obj, **kw)
+web-1            |            ^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 956, in visit_table
+web-1            |     )._invoke_with(self.connection)
+web-1            |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 314, in _invoke_with
+web-1            |     return bind.execute(self)
+web-1            |            ^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1418, in execute
+web-1            |     return meth(
+web-1            |            ^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 180, in _execute_on_connection
+web-1            |     return connection._execute_ddl(
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1529, in _execute_ddl
+web-1            |     ret = self._execute_context(
+web-1            |           ^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+web-1            |     return self._exec_single_context(
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+web-1            |     self._handle_dbapi_exception(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+web-1            |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+web-1            |     self.dialect.do_execute(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+web-1            |     cursor.execute(statement, parameters)
+web-1            | sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+web-1            | DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+web-1            | 
+web-1            | [SQL: 
+web-1            | CREATE TABLE users (
+web-1            | 	id SERIAL NOT NULL, 
+web-1            | 	email VARCHAR(255), 
+web-1            | 	phone VARCHAR(20), 
+web-1            | 	password_hash VARCHAR(255), 
+web-1            | 	name VARCHAR(255) NOT NULL, 
+web-1            | 	role VARCHAR(20) NOT NULL, 
+web-1            | 	phone_verified BOOLEAN NOT NULL, 
+web-1            | 	is_active BOOLEAN NOT NULL, 
+web-1            | 	api_key VARCHAR(255), 
+web-1            | 	created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+web-1            | 	expires_at TIMESTAMP WITHOUT TIME ZONE, 
+web-1            | 	last_login TIMESTAMP WITHOUT TIME ZONE, 
+web-1            | 	PRIMARY KEY (id), 
+web-1            | 	UNIQUE (api_key)
+web-1            | )
+web-1            | 
+web-1            | ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/gkpj)
+web-1            | 
+web-1            | [2025-11-06 23:05:54 +0330] [11] [ERROR] Application startup failed. Exiting.
+web-1            | [2025-11-06 23:05:54 +0330] [11] [INFO] Worker exiting (pid: 11)
+web-1            | [2025-11-06 23:05:54 +0330] [9] [ERROR] Traceback (most recent call last):
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+web-1            |     self.dialect.do_execute(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+web-1            |     cursor.execute(statement, parameters)
+web-1            | psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+web-1            | DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+web-1            | 
+web-1            | 
+web-1            | The above exception was the direct cause of the following exception:
+web-1            | 
+web-1            | Traceback (most recent call last):
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 732, in lifespan
+web-1            |     async with self.lifespan_context(app) as maybe_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 608, in __aenter__
+web-1            |     await self._router.startup()
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 709, in startup
+web-1            |     await handler()
+web-1            |   File "/app/app/main.py", line 73, in startup
+web-1            |     Base.metadata.create_all(bind=engine)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/schema.py", line 5868, in create_all
+web-1            |     bind._run_ddl_visitor(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 3253, in _run_ddl_visitor
+web-1            |     conn._run_ddl_visitor(visitorcallable, element, **kwargs)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2459, in _run_ddl_visitor
+web-1            |     visitorcallable(self.dialect, self, **kwargs).traverse_single(element)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/visitors.py", line 664, in traverse_single
+web-1            |     return meth(obj, **kw)
+web-1            |            ^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 918, in visit_metadata
+web-1            |     self.traverse_single(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/visitors.py", line 664, in traverse_single
+web-1            |     return meth(obj, **kw)
+web-1            |            ^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 956, in visit_table
+web-1            |     )._invoke_with(self.connection)
+web-1            |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 314, in _invoke_with
+web-1            |     return bind.execute(self)
+web-1            |            ^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1418, in execute
+web-1            |     return meth(
+web-1            |            ^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 180, in _execute_on_connection
+web-1            |     return connection._execute_ddl(
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1529, in _execute_ddl
+web-1            |     ret = self._execute_context(
+web-1            |           ^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+web-1            |     return self._exec_single_context(
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+web-1            |     self._handle_dbapi_exception(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+web-1            |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+web-1            |     self.dialect.do_execute(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+web-1            |     cursor.execute(statement, parameters)
+web-1            | sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+web-1            | DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+web-1            | 
+web-1            | [SQL: 
+web-1            | CREATE TABLE users (
+web-1            | 	id SERIAL NOT NULL, 
+web-1            | 	email VARCHAR(255), 
+web-1            | 	phone VARCHAR(20), 
+web-1            | 	password_hash VARCHAR(255), 
+web-1            | 	name VARCHAR(255) NOT NULL, 
+web-1            | 	role VARCHAR(20) NOT NULL, 
+web-1            | 	phone_verified BOOLEAN NOT NULL, 
+web-1            | 	is_active BOOLEAN NOT NULL, 
+web-1            | 	api_key VARCHAR(255), 
+web-1            | 	created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+web-1            | 	expires_at TIMESTAMP WITHOUT TIME ZONE, 
+web-1            | 	last_login TIMESTAMP WITHOUT TIME ZONE, 
+web-1            | 	PRIMARY KEY (id), 
+web-1            | 	UNIQUE (api_key)
+web-1            | )
+web-1            | 
+web-1            | ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/gkpj)
+web-1            | 
+web-1            | [2025-11-06 23:05:54 +0330] [9] [ERROR] Application startup failed. Exiting.
+web-1            | [2025-11-06 23:05:54 +0330] [9] [INFO] Worker exiting (pid: 9)
+web-1            | [2025-11-06 23:05:54 +0330] [12] [ERROR] Traceback (most recent call last):
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+web-1            |     self.dialect.do_execute(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+web-1            |     cursor.execute(statement, parameters)
+web-1            | psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+web-1            | DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+web-1            | 
+web-1            | 
+web-1            | The above exception was the direct cause of the following exception:
+web-1            | 
+web-1            | Traceback (most recent call last):
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 732, in lifespan
+web-1            |     async with self.lifespan_context(app) as maybe_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/contextlib.py", line 210, in __aenter__
+web-1            |     return await anext(self.gen)
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 133, in merged_lifespan
+web-1            |     async with original_context(app) as maybe_original_state:
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 608, in __aenter__
+web-1            |     await self._router.startup()
+web-1            |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 709, in startup
+web-1            |     await handler()
+web-1            |   File "/app/app/main.py", line 73, in startup
+web-1            |     Base.metadata.create_all(bind=engine)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/schema.py", line 5868, in create_all
+web-1            |     bind._run_ddl_visitor(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 3253, in _run_ddl_visitor
+web-1            |     conn._run_ddl_visitor(visitorcallable, element, **kwargs)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2459, in _run_ddl_visitor
+web-1            |     visitorcallable(self.dialect, self, **kwargs).traverse_single(element)
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/visitors.py", line 664, in traverse_single
+web-1            |     return meth(obj, **kw)
+web-1            |            ^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 918, in visit_metadata
+web-1            |     self.traverse_single(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/visitors.py", line 664, in traverse_single
+web-1            |     return meth(obj, **kw)
+web-1            |            ^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 956, in visit_table
+web-1            |     )._invoke_with(self.connection)
+web-1            |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 314, in _invoke_with
+web-1            |     return bind.execute(self)
+web-1            |            ^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1418, in execute
+web-1            |     return meth(
+web-1            |            ^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py", line 180, in _execute_on_connection
+web-1            |     return connection._execute_ddl(
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1529, in _execute_ddl
+web-1            |     ret = self._execute_context(
+web-1            |           ^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+web-1            |     return self._exec_single_context(
+web-1            |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+web-1            |     self._handle_dbapi_exception(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+web-1            |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+web-1            |     self.dialect.do_execute(
+web-1            |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+web-1            |     cursor.execute(statement, parameters)
+web-1            | sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+web-1            | DETAIL:  Key (typname, typnamespace)=(users, 2200) already exists.
+web-1            | 
+web-1            | [SQL: 
+web-1            | CREATE TABLE users (
+web-1            | 	id SERIAL NOT NULL, 
+web-1            | 	email VARCHAR(255), 
+web-1            | 	phone VARCHAR(20), 
+web-1            | 	password_hash VARCHAR(255), 
+web-1            | 	name VARCHAR(255) NOT NULL, 
+web-1            | 	role VARCHAR(20) NOT NULL, 
+web-1            | 	phone_verified BOOLEAN NOT NULL, 
+web-1            | 	is_active BOOLEAN NOT NULL, 
+web-1            | 	api_key VARCHAR(255), 
+web-1            | 	created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+web-1            | 	expires_at TIMESTAMP WITHOUT TIME ZONE, 
+web-1            | 	last_login TIMESTAMP WITHOUT TIME ZONE, 
+web-1            | 	PRIMARY KEY (id), 
+web-1            | 	UNIQUE (api_key)
+web-1            | )
+web-1            | 
+web-1            | ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/gkpj)
+web-1            | 
+web-1            | [2025-11-06 23:05:54 +0330] [12] [ERROR] Application startup failed. Exiting.
+web-1            | [2025-11-06 23:05:54 +0330] [12] [INFO] Worker exiting (pid: 12)
+web-1            | [MIGRATION] Note: requires_otp migration skipped: (psycopg2.errors.UndefinedColumn) column "requires_otp" of relation "streams" does not exist
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN requires_otp DROP NOT NULL,
+web-1            |                 ALTER COLUMN requires_otp SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/f405)
+web-1            | [MIGRATION] Note: otp_verification_required migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN otp_verification_required DROP NOT NULL,
+web-1            |                 ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: end_time drop skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: ALTER TABLE streams DROP COLUMN IF EXISTS end_time]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: share_link migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN share_link DROP NOT NULL
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [STARTUP] Migration error: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |             SELECT column_name 
+web-1            |             FROM information_schema.columns 
+web-1            |             WHERE table_name='comments' AND column_name='last_name'
+web-1            |         ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [2025-11-06 23:05:54 +0330] [7] [INFO] Application startup complete.
+web-1            | [2025-11-06 23:05:54 +0330] [1] [ERROR] Worker (pid:10) exited with code 3
+web-1            | [2025-11-06 23:05:54 +0330] [1] [ERROR] Worker (pid:8) was sent SIGTERM!
+web-1            | [2025-11-06 23:05:54 +0330] [1] [ERROR] Worker (pid:12) was sent SIGTERM!
+web-1            | [2025-11-06 23:05:54 +0330] [1] [ERROR] Worker (pid:11) was sent SIGTERM!
+web-1            | [2025-11-06 23:05:54 +0330] [1] [ERROR] Worker (pid:9) was sent SIGTERM!
+web-1            | [2025-11-06 23:05:55 +0330] [7] [INFO] Shutting down
+web-1            | [2025-11-06 23:05:55 +0330] [7] [INFO] Waiting for application shutdown.
+web-1            | [2025-11-06 23:05:55 +0330] [7] [INFO] Application shutdown complete.
+web-1            | [2025-11-06 23:05:55 +0330] [7] [INFO] Finished server process [7]
+web-1            | [2025-11-06 23:05:55 +0330] [1] [ERROR] Worker (pid:7) was sent SIGTERM!
+web-1            | [2025-11-06 23:05:55 +0330] [1] [ERROR] Shutting down: Master
+web-1            | [2025-11-06 23:05:55 +0330] [1] [ERROR] Reason: Worker failed to boot.
+web-1            | [2025-11-06 23:05:59 +0330] [1] [INFO] Starting gunicorn 21.2.0
+web-1            | [2025-11-06 23:05:59 +0330] [1] [INFO] Listening at: http://0.0.0.0:8000 (1)
+web-1            | [2025-11-06 23:05:59 +0330] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker
+web-1            | [2025-11-06 23:05:59 +0330] [7] [INFO] Booting worker with pid: 7
+web-1            | [2025-11-06 23:05:59 +0330] [8] [INFO] Booting worker with pid: 8
+web-1            | [2025-11-06 23:05:59 +0330] [8] [INFO] Started server process [8]
+web-1            | [2025-11-06 23:05:59 +0330] [8] [INFO] Waiting for application startup.
+web-1            | [2025-11-06 23:05:59 +0330] [7] [INFO] Started server process [7]
+web-1            | [2025-11-06 23:05:59 +0330] [7] [INFO] Waiting for application startup.
+web-1            | [2025-11-06 23:05:59 +0330] [9] [INFO] Booting worker with pid: 9
+web-1            | [2025-11-06 23:05:59 +0330] [10] [INFO] Booting worker with pid: 10
+web-1            | [2025-11-06 23:05:59 +0330] [9] [INFO] Started server process [9]
+web-1            | [2025-11-06 23:05:59 +0330] [9] [INFO] Waiting for application startup.
+web-1            | [2025-11-06 23:05:59 +0330] [11] [INFO] Booting worker with pid: 11
+web-1            | [2025-11-06 23:05:59 +0330] [10] [INFO] Started server process [10]
+web-1            | [2025-11-06 23:05:59 +0330] [10] [INFO] Waiting for application startup.
+web-1            | [MIGRATION] Note: requires_otp migration skipped: (psycopg2.errors.UndefinedColumn) column "requires_otp" of relation "streams" does not exist
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN requires_otp DROP NOT NULL,
+web-1            |                 ALTER COLUMN requires_otp SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/f405)
+web-1            | [2025-11-06 23:05:59 +0330] [12] [INFO] Booting worker with pid: 12
+web-1            | [MIGRATION] Note: otp_verification_required migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN otp_verification_required DROP NOT NULL,
+web-1            |                 ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: end_time drop skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: ALTER TABLE streams DROP COLUMN IF EXISTS end_time]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: share_link migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN share_link DROP NOT NULL
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [STARTUP] Migration error: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |             SELECT column_name 
+web-1            |             FROM information_schema.columns 
+web-1            |             WHERE table_name='comments' AND column_name='last_name'
+web-1            |         ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: requires_otp migration skipped: (psycopg2.errors.UndefinedColumn) column "requires_otp" of relation "streams" does not exist
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN requires_otp DROP NOT NULL,
+web-1            |                 ALTER COLUMN requires_otp SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/f405)
+web-1            | [MIGRATION] Note: otp_verification_required migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN otp_verification_required DROP NOT NULL,
+web-1            |                 ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: end_time drop skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: ALTER TABLE streams DROP COLUMN IF EXISTS end_time]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: share_link migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN share_link DROP NOT NULL
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [STARTUP] Migration error: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |             SELECT column_name 
+web-1            |             FROM information_schema.columns 
+web-1            |             WHERE table_name='comments' AND column_name='last_name'
+web-1            |         ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [2025-11-06 23:06:00 +0330] [12] [INFO] Started server process [12]
+web-1            | [2025-11-06 23:06:00 +0330] [12] [INFO] Waiting for application startup.
+web-1            | [2025-11-06 23:06:00 +0330] [11] [INFO] Started server process [11]
+web-1            | [2025-11-06 23:06:00 +0330] [11] [INFO] Waiting for application startup.
+web-1            | [MIGRATION] Note: requires_otp migration skipped: (psycopg2.errors.UndefinedColumn) column "requires_otp" of relation "streams" does not exist
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN requires_otp DROP NOT NULL,
+web-1            |                 ALTER COLUMN requires_otp SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/f405)
+web-1            | [MIGRATION] Note: otp_verification_required migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN otp_verification_required DROP NOT NULL,
+web-1            |                 ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: end_time drop skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: ALTER TABLE streams DROP COLUMN IF EXISTS end_time]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: share_link migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN share_link DROP NOT NULL
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [STARTUP] Migration error: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |             SELECT column_name 
+web-1            |             FROM information_schema.columns 
+web-1            |             WHERE table_name='comments' AND column_name='last_name'
+web-1            |         ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: requires_otp migration skipped: (psycopg2.errors.UndefinedColumn) column "requires_otp" of relation "streams" does not exist
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN requires_otp DROP NOT NULL,
+web-1            |                 ALTER COLUMN requires_otp SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/f405)
+web-1            | [MIGRATION] Note: otp_verification_required migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN otp_verification_required DROP NOT NULL,
+web-1            |                 ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: end_time drop skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: ALTER TABLE streams DROP COLUMN IF EXISTS end_time]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: share_link migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN share_link DROP NOT NULL
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [STARTUP] Migration error: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |             SELECT column_name 
+web-1            |             FROM information_schema.columns 
+web-1            |             WHERE table_name='comments' AND column_name='last_name'
+web-1            |         ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: requires_otp migration skipped: (psycopg2.errors.UndefinedColumn) column "requires_otp" of relation "streams" does not exist
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN requires_otp DROP NOT NULL,
+web-1            |                 ALTER COLUMN requires_otp SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/f405)
+web-1            | [MIGRATION] Note: otp_verification_required migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN otp_verification_required DROP NOT NULL,
+web-1            |                 ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: end_time drop skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: ALTER TABLE streams DROP COLUMN IF EXISTS end_time]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: share_link migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN share_link DROP NOT NULL
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [STARTUP] Migration error: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |             SELECT column_name 
+web-1            |             FROM information_schema.columns 
+web-1            |             WHERE table_name='comments' AND column_name='last_name'
+web-1            |         ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: requires_otp migration skipped: (psycopg2.errors.UndefinedColumn) column "requires_otp" of relation "streams" does not exist
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN requires_otp DROP NOT NULL,
+web-1            |                 ALTER COLUMN requires_otp SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/f405)
+web-1            | [MIGRATION] Note: otp_verification_required migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN otp_verification_required DROP NOT NULL,
+web-1            |                 ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: end_time drop skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: ALTER TABLE streams DROP COLUMN IF EXISTS end_time]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [MIGRATION] Note: share_link migration skipped: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |                 ALTER TABLE streams 
+web-1            |                 ALTER COLUMN share_link DROP NOT NULL
+web-1            |             ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [STARTUP] Migration error: (psycopg2.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+web-1            | 
+web-1            | [SQL: 
+web-1            |             SELECT column_name 
+web-1            |             FROM information_schema.columns 
+web-1            |             WHERE table_name='comments' AND column_name='last_name'
+web-1            |         ]
+web-1            | (Background on this error at: https://sqlalche.me/e/20/2j85)
+web-1            | [2025-11-06 23:06:00 +0330] [7] [INFO] Application startup complete.
+web-1            | [2025-11-06 23:06:00 +0330] [9] [INFO] Application startup complete.
+web-1            | [2025-11-06 23:06:00 +0330] [8] [INFO] Application startup complete.
+web-1            | [2025-11-06 23:06:00 +0330] [11] [INFO] Application startup complete.
+web-1            | [2025-11-06 23:06:00 +0330] [12] [INFO] Application startup complete.
+web-1            | [2025-11-06 23:06:00 +0330] [10] [INFO] Application startup complete.

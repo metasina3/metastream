@@ -70,81 +70,121 @@ except:
 @app.on_event("startup")
 async def startup():
     """Create database tables"""
-    Base.metadata.create_all(bind=engine)
+    # Create tables with error handling for race conditions
+    # Multiple workers may try to create tables simultaneously
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("[STARTUP] Database tables created/verified")
+    except IntegrityError as e:
+        # Ignore duplicate key errors (race condition when multiple workers start)
+        if "pg_type_typname_nsp_index" in str(e) or "duplicate key" in str(e).lower():
+            print("[STARTUP] Tables already exist (race condition handled)")
+        else:
+            print(f"[STARTUP] Warning: Database creation error: {e}")
+    except Exception as e:
+        # Log other errors but don't fail startup
+        print(f"[STARTUP] Warning: Database creation error: {e}")
     
     # Run migrations
+    # Each migration in separate transaction to avoid abort issues
+    db = None
     try:
         db = SessionLocal()
         from sqlalchemy import text
         
         # 1. Migrate channels table
-        result = db.execute(text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name='channels' AND column_name='rtmp_url'
-        """))
-        if not result.fetchone():
-            db.execute(text("ALTER TABLE channels ADD COLUMN rtmp_url VARCHAR(500)"))
-            db.commit()
-            print("[MIGRATION] Added rtmp_url to channels")
+        try:
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='channels' AND column_name='rtmp_url'
+            """))
+            if not result.fetchone():
+                db.execute(text("ALTER TABLE channels ADD COLUMN rtmp_url VARCHAR(500)"))
+                db.commit()
+                print("[MIGRATION] Added rtmp_url to channels")
+        except Exception as e:
+            db.rollback()
+            print(f"[MIGRATION] Note: rtmp_url migration skipped: {e}")
             
-        result = db.execute(text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name='channels' AND column_name='rtmp_key'
-        """))
-        if not result.fetchone():
-            db.execute(text("ALTER TABLE channels ADD COLUMN rtmp_key VARCHAR(500)"))
-            db.commit()
-            print("[MIGRATION] Added rtmp_key to channels")
+        try:
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='channels' AND column_name='rtmp_key'
+            """))
+            if not result.fetchone():
+                db.execute(text("ALTER TABLE channels ADD COLUMN rtmp_key VARCHAR(500)"))
+                db.commit()
+                print("[MIGRATION] Added rtmp_key to channels")
+        except Exception as e:
+            db.rollback()
+            print(f"[MIGRATION] Note: rtmp_key migration skipped: {e}")
             
         try:
             db.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS unique_aparat_username_idx ON channels (aparat_username)"))
             db.commit()
-        except Exception:
-            pass
+        except Exception as e:
+            db.rollback()
+            print(f"[MIGRATION] Note: unique_aparat_username_idx skipped: {e}")
         
         # 2. Migrate streams table
-        result = db.execute(text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name='streams' AND column_name='caption'
-        """))
-        if not result.fetchone():
-            db.execute(text("ALTER TABLE streams ADD COLUMN caption TEXT"))
-            db.commit()
-            print("[MIGRATION] Added caption to streams")
+        try:
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='streams' AND column_name='caption'
+            """))
+            if not result.fetchone():
+                db.execute(text("ALTER TABLE streams ADD COLUMN caption TEXT"))
+                db.commit()
+                print("[MIGRATION] Added caption to streams")
+        except Exception as e:
+            db.rollback()
+            print(f"[MIGRATION] Note: caption migration skipped: {e}")
             
-        result = db.execute(text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name='streams' AND column_name='slug'
-        """))
-        if not result.fetchone():
-            db.execute(text("ALTER TABLE streams ADD COLUMN slug VARCHAR(255)"))
-            db.commit()
-            print("[MIGRATION] Added slug to streams")
+        try:
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='streams' AND column_name='slug'
+            """))
+            if not result.fetchone():
+                db.execute(text("ALTER TABLE streams ADD COLUMN slug VARCHAR(255)"))
+                db.commit()
+                print("[MIGRATION] Added slug to streams")
+        except Exception as e:
+            db.rollback()
+            print(f"[MIGRATION] Note: slug migration skipped: {e}")
             
-        result = db.execute(text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name='streams' AND column_name='duration'
-        """))
-        if not result.fetchone():
-            db.execute(text("ALTER TABLE streams ADD COLUMN duration INTEGER DEFAULT 0"))
-            db.commit()
-            print("[MIGRATION] Added duration to streams")
+        try:
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='streams' AND column_name='duration'
+            """))
+            if not result.fetchone():
+                db.execute(text("ALTER TABLE streams ADD COLUMN duration INTEGER DEFAULT 0"))
+                db.commit()
+                print("[MIGRATION] Added duration to streams")
+        except Exception as e:
+            db.rollback()
+            print(f"[MIGRATION] Note: duration migration skipped: {e}")
         
         # Add error_message column if it doesn't exist
-        result = db.execute(text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name='streams' AND column_name='error_message'
-        """))
-        if not result.fetchone():
-            db.execute(text("ALTER TABLE streams ADD COLUMN error_message TEXT"))
-            db.commit()
-            print("[MIGRATION] Added error_message to streams")
+        try:
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='streams' AND column_name='error_message'
+            """))
+            if not result.fetchone():
+                db.execute(text("ALTER TABLE streams ADD COLUMN error_message TEXT"))
+                db.commit()
+                print("[MIGRATION] Added error_message to streams")
+        except Exception as e:
+            db.rollback()
+            print(f"[MIGRATION] Note: error_message migration skipped: {e}")
         
         # Make channel_id and video_id nullable to protect streams from deletion
         try:
@@ -159,6 +199,7 @@ async def startup():
                 db.commit()
                 print("[MIGRATION] Made channel_id nullable in streams")
         except Exception as e:
+            db.rollback()
             print(f"[MIGRATION] Note: channel_id nullable migration: {e}")
         
         try:
@@ -173,31 +214,47 @@ async def startup():
                 db.commit()
                 print("[MIGRATION] Made video_id nullable in streams")
         except Exception as e:
+            db.rollback()
             print(f"[MIGRATION] Note: video_id nullable migration: {e}")
         
         # Make requires_otp nullable (we removed it from model)
+        # Check if column exists first
         try:
-            db.execute(text("""
-                ALTER TABLE streams 
-                ALTER COLUMN requires_otp DROP NOT NULL,
-                ALTER COLUMN requires_otp SET DEFAULT FALSE
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='streams' AND column_name='requires_otp'
             """))
-            db.commit()
-            print("[MIGRATION] Made requires_otp nullable in streams")
+            if result.fetchone():
+                db.execute(text("""
+                    ALTER TABLE streams 
+                    ALTER COLUMN requires_otp DROP NOT NULL,
+                    ALTER COLUMN requires_otp SET DEFAULT FALSE
+                """))
+                db.commit()
+                print("[MIGRATION] Made requires_otp nullable in streams")
         except Exception as e:
+            db.rollback()
             # Column might not exist or already nullable
             print(f"[MIGRATION] Note: requires_otp migration skipped: {e}")
         
         # Make otp_verification_required nullable
         try:
-            db.execute(text("""
-                ALTER TABLE streams 
-                ALTER COLUMN otp_verification_required DROP NOT NULL,
-                ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='streams' AND column_name='otp_verification_required'
             """))
-            db.commit()
-            print("[MIGRATION] Made otp_verification_required nullable in streams")
+            if result.fetchone():
+                db.execute(text("""
+                    ALTER TABLE streams 
+                    ALTER COLUMN otp_verification_required DROP NOT NULL,
+                    ALTER COLUMN otp_verification_required SET DEFAULT FALSE
+                """))
+                db.commit()
+                print("[MIGRATION] Made otp_verification_required nullable in streams")
         except Exception as e:
+            db.rollback()
             print(f"[MIGRATION] Note: otp_verification_required migration skipped: {e}")
         
         # Drop end_time if exists (we use duration now)
@@ -206,64 +263,98 @@ async def startup():
             db.commit()
             print("[MIGRATION] Dropped end_time from streams")
         except Exception as e:
+            db.rollback()
             print(f"[MIGRATION] Note: end_time drop skipped: {e}")
         
         # Make share_link nullable or drop it (we use slug now)
         try:
-            db.execute(text("""
-                ALTER TABLE streams 
-                ALTER COLUMN share_link DROP NOT NULL
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='streams' AND column_name='share_link'
             """))
-            db.commit()
-            print("[MIGRATION] Made share_link nullable in streams")
+            if result.fetchone():
+                db.execute(text("""
+                    ALTER TABLE streams 
+                    ALTER COLUMN share_link DROP NOT NULL
+                """))
+                db.commit()
+                print("[MIGRATION] Made share_link nullable in streams")
         except Exception as e:
+            db.rollback()
             print(f"[MIGRATION] Note: share_link migration skipped: {e}")
         
         # 3. Migrate comments table  
-        result = db.execute(text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name='comments' AND column_name='last_name'
-        """))
-        if not result.fetchone():
-            db.execute(text("ALTER TABLE comments ADD COLUMN last_name VARCHAR(100)"))
-            db.commit()
-            print("[MIGRATION] Added last_name to comments")
+        try:
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='comments' AND column_name='last_name'
+            """))
+            if not result.fetchone():
+                db.execute(text("ALTER TABLE comments ADD COLUMN last_name VARCHAR(100)"))
+                db.commit()
+                print("[MIGRATION] Added last_name to comments")
+        except Exception as e:
+            db.rollback()
+            print(f"[MIGRATION] Note: last_name migration skipped: {e}")
             
-        result = db.execute(text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name='comments' AND column_name='text'
-        """))
-        if not result.fetchone():
-            db.execute(text("ALTER TABLE comments ADD COLUMN text TEXT"))
-            db.commit()
-            print("[MIGRATION] Added text to comments")
+        try:
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='comments' AND column_name='text'
+            """))
+            if not result.fetchone():
+                db.execute(text("ALTER TABLE comments ADD COLUMN text TEXT"))
+                db.commit()
+                print("[MIGRATION] Added text to comments")
+        except Exception as e:
+            db.rollback()
+            print(f"[MIGRATION] Note: text migration skipped: {e}")
             
-        result = db.execute(text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name='comments' AND column_name='is_approved'
-        """))
-        if not result.fetchone():
-            db.execute(text("ALTER TABLE comments ADD COLUMN is_approved BOOLEAN DEFAULT FALSE"))
-            db.commit()
-            print("[MIGRATION] Added is_approved to comments")
+        try:
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='comments' AND column_name='is_approved'
+            """))
+            if not result.fetchone():
+                db.execute(text("ALTER TABLE comments ADD COLUMN is_approved BOOLEAN DEFAULT FALSE"))
+                db.commit()
+                print("[MIGRATION] Added is_approved to comments")
+        except Exception as e:
+            db.rollback()
+            print(f"[MIGRATION] Note: is_approved migration skipped: {e}")
             
-        result = db.execute(text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name='comments' AND column_name='is_deleted'
-        """))
-        if not result.fetchone():
-            db.execute(text("ALTER TABLE comments ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE"))
-            db.commit()
-            print("[MIGRATION] Added is_deleted to comments")
+        try:
+            result = db.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='comments' AND column_name='is_deleted'
+            """))
+            if not result.fetchone():
+                db.execute(text("ALTER TABLE comments ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE"))
+                db.commit()
+                print("[MIGRATION] Added is_deleted to comments")
+        except Exception as e:
+            db.rollback()
+            print(f"[MIGRATION] Note: is_deleted migration skipped: {e}")
         
-        db.close()
         print("[MIGRATION] All migrations completed successfully")
     except Exception as e:
         print(f"[STARTUP] Migration error: {e}")
+        try:
+            if db:
+                db.rollback()
+        except:
+            pass
+    finally:
+        try:
+            if db:
+                db.close()
+        except:
+            pass
     # Ensure admin user exists based on env
     try:
         db = SessionLocal()
