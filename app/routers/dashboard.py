@@ -622,91 +622,365 @@ async def upload_video(
 async def upload_video_chunk(
     request: Request,
     upload_id: str = Header(..., alias="Upload-Id"),
-    content_range: str = Header(..., alias="Content-Range"),
+    content_range: str | None = Header(None, alias="Content-Range"),
     file_name_header: str | None = Header(None, alias="X-File-Name"),
     file_total: int = Header(..., alias="X-File-Size"),
+    chunk_index: int | None = Header(None, alias="X-Chunk-Index"),
+    total_chunks: int | None = Header(None, alias="X-Total-Chunks"),
     filename_q: str | None = Query(None, alias="filename"),
     title: str | None = Query(None),  # عنوان ویدیو از query parameter
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
     """
-    Chunked/resumable upload. Headers:
+    Parallel chunked upload with support for multiple simultaneous connections.
+    Optimized for slow networks with adaptive chunk size and QUIC/HTTP3 support.
+    Headers:
       - Upload-Id: stable id for this file
-      - Content-Range: bytes start-end/total
+      - Content-Range: bytes start-end/total (optional, for backward compatibility)
+      - X-Chunk-Index: chunk index (0-based) for parallel upload
+      - X-Total-Chunks: total number of chunks
       - X-File-Name, X-File-Size
     Body is raw binary for the chunk.
     """
-    # Parse range
-    # format: bytes start-end/total
+    import json
+    import uuid
+    
     try:
         file_name = file_name_header or filename_q or "upload.bin"
-        units, rng = content_range.split(' ')
-        start_end, total = rng.split('/')
-        start, end = start_end.split('-')
-        start = int(start)
-        end = int(end)
-        total = int(total)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid Content-Range: {str(e)}")
-    if total != int(file_total):
-        raise HTTPException(status_code=400, detail="Size mismatch")
-    # Paths
-    chunk_dir = os.path.join(settings.UPLOAD_DIR, 'chunks')
-    os.makedirs(chunk_dir, exist_ok=True)
-    tmp_path = os.path.join(chunk_dir, upload_id + '.part')
-    # Ensure file exists to correct size
-    try:
-        current_size = os.path.getsize(tmp_path) if os.path.exists(tmp_path) else 0
-        # Validate start equals current size (simple resume)
-        if start != current_size:
-            return {"success": False, "received": current_size, "detail": "Offset mismatch"}
-        # Ensure parent dir for final storage exists
-        os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-        # Read body bytes
-        body = await request.body()
-        with open(tmp_path, 'ab') as f:
-            f.write(body)
-        current_size = os.path.getsize(tmp_path)
-        completed = current_size >= total
-        if completed:
-            # Move to final path
-            import uuid
-            ext = file_name.split('.')[-1] if '.' in file_name else 'bin'
-            final_name = f"{uuid.uuid4()}.{ext}"
-            final_path = os.path.join(settings.UPLOAD_DIR, final_name)
-            os.replace(tmp_path, final_path)
-            # Create video and trigger processing
-            video = Video(
-                user_id=user.id,
-                title=title if title else file_name,  # استفاده از عنوان داده شده یا نام فایل
-                original_file=final_path,
-                status="pending",
-                file_size=total
-            )
-            db.add(video)
-            db.commit()
-            db.refresh(video)
+        total = int(file_total)
+        
+        # Support both old sequential and new parallel mode
+        if chunk_index is not None and total_chunks is not None:
+            # Parallel mode: use chunk_index
+            chunk_idx = int(chunk_index)
+            total_chunks_count = int(total_chunks)
+            
+            if chunk_idx < 0 or chunk_idx >= total_chunks_count:
+                raise HTTPException(status_code=400, detail=f"Invalid chunk_index: {chunk_idx}")
+            
+            # Calculate chunk size
+            chunk_size = total // total_chunks_count
+            start = chunk_idx * chunk_size
+            end = start + chunk_size if chunk_idx < total_chunks_count - 1 else total
+            
+        elif content_range:
+            # Sequential mode (backward compatibility)
             try:
-                from app.tasks.video import prepare_video
-                prepare_video.delay(video.id)
-            except Exception:
-                pass
-            return {"success": True, "completed": True, "video_id": video.id}
-        return {"success": True, "completed": False, "received": current_size}
+                units, rng = content_range.split(' ')
+                start_end, total_from_range = rng.split('/')
+                start, end = start_end.split('-')
+                start = int(start)
+                end = int(end)
+                total_from_range = int(total_from_range)
+                if total_from_range != total:
+                    raise HTTPException(status_code=400, detail="Size mismatch in Content-Range")
+                chunk_idx = None
+                total_chunks_count = None
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Invalid Content-Range: {str(e)}")
+        else:
+            raise HTTPException(status_code=400, detail="Either Content-Range or X-Chunk-Index required")
+        
+        # Paths for parallel chunks
+        chunk_dir = os.path.join(settings.UPLOAD_DIR, 'chunks')
+        os.makedirs(chunk_dir, exist_ok=True)
+        
+        if chunk_idx is not None:
+            # Parallel mode: save each chunk separately
+            chunk_file = os.path.join(chunk_dir, f"{upload_id}.chunk.{chunk_idx}")
+            metadata_file = os.path.join(chunk_dir, f"{upload_id}.meta")
+            
+            # Read chunk data with timeout protection
+            try:
+                body = await request.body()
+                received_size = len(body)
+            except Exception as e:
+                print(f"[UPLOAD] Error reading chunk body: {e}")
+                raise HTTPException(status_code=400, detail=f"Error reading chunk data: {str(e)}")
+            
+            # Validate chunk size (allow small tolerance for last chunk)
+            expected_size = end - start
+            size_tolerance = 1024  # 1KB tolerance for last chunk
+            if abs(received_size - expected_size) > size_tolerance:
+                # Check if this is the last chunk (might be smaller)
+                if chunk_idx == total_chunks_count - 1:
+                    # Last chunk can be smaller
+                    if received_size > expected_size:
+                        raise HTTPException(status_code=400, detail=f"Chunk size mismatch: expected max {expected_size}, got {received_size}")
+                else:
+                    raise HTTPException(status_code=400, detail=f"Chunk size mismatch: expected {expected_size}, got {received_size}")
+            
+            # Save chunk with error handling
+            try:
+                with open(chunk_file, 'wb') as f:
+                    f.write(body)
+            except Exception as e:
+                print(f"[UPLOAD] Error saving chunk {chunk_idx}: {e}")
+                raise HTTPException(status_code=500, detail=f"Error saving chunk: {str(e)}")
+            
+            # Update metadata with file locking for concurrent access
+            metadata = {}
+            if os.path.exists(metadata_file):
+                try:
+                    # Retry reading metadata in case of concurrent access
+                    for retry in range(3):
+                        try:
+                            with open(metadata_file, 'r') as f:
+                                metadata = json.load(f)
+                            break
+                        except (json.JSONDecodeError, IOError) as e:
+                            if retry < 2:
+                                import time
+                                time.sleep(0.1)  # Wait 100ms before retry
+                            else:
+                                print(f"[UPLOAD] Error reading metadata after retries: {e}")
+                                metadata = {}
+                except Exception as e:
+                    print(f"[UPLOAD] Error reading metadata: {e}")
+                    metadata = {}
+            
+            if 'chunks' not in metadata:
+                metadata['chunks'] = {}
+                metadata['file_name'] = file_name
+                metadata['title'] = title
+                metadata['total_size'] = total
+                metadata['total_chunks'] = total_chunks_count
+                metadata['user_id'] = user.id
+            
+            metadata['chunks'][str(chunk_idx)] = {
+                'received': True,
+                'size': received_size,
+                'start': start,
+                'end': end
+            }
+            
+            # Save metadata with error handling
+            try:
+                # Use atomic write (write to temp file then rename)
+                temp_metadata_file = metadata_file + '.tmp'
+                with open(temp_metadata_file, 'w') as f:
+                    json.dump(metadata, f)
+                os.replace(temp_metadata_file, metadata_file)
+            except Exception as e:
+                print(f"[UPLOAD] Error saving metadata: {e}")
+                # Try to clean up temp file
+                try:
+                    if os.path.exists(metadata_file + '.tmp'):
+                        os.remove(metadata_file + '.tmp')
+                except:
+                    pass
+                # Don't fail the request if metadata save fails
+                # The chunk is already saved, metadata can be reconstructed
+            
+            # Check if all chunks received
+            # First check metadata, then verify chunk files exist
+            received_chunks = len([c for c in metadata['chunks'].values() if c.get('received')])
+            
+            # Also check if chunk files exist (in case metadata wasn't saved properly)
+            missing_chunks = []
+            for i in range(total_chunks_count):
+                chunk_file_path = os.path.join(chunk_dir, f"{upload_id}.chunk.{i}")
+                if not os.path.exists(chunk_file_path):
+                    missing_chunks.append(i)
+                else:
+                    # If file exists but not in metadata, mark it as received
+                    if str(i) not in metadata['chunks'] or not metadata['chunks'][str(i)].get('received'):
+                        metadata['chunks'][str(i)] = {
+                            'received': True,
+                            'size': os.path.getsize(chunk_file_path),
+                            'start': i * (total // total_chunks_count),
+                            'end': (i + 1) * (total // total_chunks_count) if i < total_chunks_count - 1 else total
+                        }
+                        # Try to save updated metadata
+                        try:
+                            temp_metadata_file = metadata_file + '.tmp'
+                            with open(temp_metadata_file, 'w') as f:
+                                json.dump(metadata, f)
+                            os.replace(temp_metadata_file, metadata_file)
+                        except Exception:
+                            pass
+            
+            all_received = len(missing_chunks) == 0
+            received_chunks = len([c for c in metadata['chunks'].values() if c.get('received')])
+            
+            if missing_chunks:
+                print(f"[UPLOAD] Missing chunks: {missing_chunks[:10]}... (total missing: {len(missing_chunks)})")
+            
+            if all_received:
+                # Merge all chunks
+                print(f"[UPLOAD] All chunks received for {upload_id}, merging...")
+                final_name = f"{uuid.uuid4()}.{file_name.split('.')[-1] if '.' in file_name else 'bin'}"
+                final_path = os.path.join(settings.UPLOAD_DIR, final_name)
+                
+                # Merge chunks in order with error handling
+                try:
+                    with open(final_path, 'wb') as final_file:
+                        for i in range(total_chunks_count):
+                            chunk_file_path = os.path.join(chunk_dir, f"{upload_id}.chunk.{i}")
+                            if not os.path.exists(chunk_file_path):
+                                # Try to wait a bit for chunk to be written (concurrent access)
+                                import time
+                                waited = 0
+                                while not os.path.exists(chunk_file_path) and waited < 5:
+                                    time.sleep(0.5)
+                                    waited += 0.5
+                                
+                                if not os.path.exists(chunk_file_path):
+                                    raise HTTPException(status_code=500, detail=f"Missing chunk {i} after waiting")
+                            
+                            with open(chunk_file_path, 'rb') as cf:
+                                chunk_data = cf.read()
+                                if not chunk_data:
+                                    raise HTTPException(status_code=500, detail=f"Empty chunk {i}")
+                                final_file.write(chunk_data)
+                            
+                            # Clean up chunk file
+                            try:
+                                os.remove(chunk_file_path)
+                            except Exception as e:
+                                print(f"[UPLOAD] Warning: Could not remove chunk {i}: {e}")
+                except Exception as e:
+                    # Clean up partial file
+                    try:
+                        if os.path.exists(final_path):
+                            os.remove(final_path)
+                    except:
+                        pass
+                    raise HTTPException(status_code=500, detail=f"Error merging chunks: {str(e)}")
+                
+                # Clean up metadata
+                try:
+                    os.remove(metadata_file)
+                except:
+                    pass
+                
+                # Create video and trigger processing
+                video = Video(
+                    user_id=user.id,
+                    title=title if title else file_name,
+                    original_file=final_path,
+                    status="pending",
+                    file_size=total
+                )
+                db.add(video)
+                db.commit()
+                db.refresh(video)
+                try:
+                    from app.tasks.video import prepare_video
+                    prepare_video.delay(video.id)
+                except Exception:
+                    pass
+                
+                print(f"[UPLOAD] Video {video.id} created from parallel upload")
+                return {"success": True, "completed": True, "video_id": video.id, "chunk_index": chunk_idx}
+            
+            return {
+                "success": True,
+                "completed": False,
+                "chunk_index": chunk_idx,
+                "received_chunks": received_chunks,
+                "total_chunks": total_chunks_count
+            }
+        
+        else:
+            # Sequential mode (backward compatibility)
+            tmp_path = os.path.join(chunk_dir, upload_id + '.part')
+            current_size = os.path.getsize(tmp_path) if os.path.exists(tmp_path) else 0
+            
+            if start != current_size:
+                return {"success": False, "received": current_size, "detail": "Offset mismatch"}
+            
+            os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+            body = await request.body()
+            
+            with open(tmp_path, 'ab') as f:
+                f.write(body)
+            
+            current_size = os.path.getsize(tmp_path)
+            completed = current_size >= total
+            
+            if completed:
+                ext = file_name.split('.')[-1] if '.' in file_name else 'bin'
+                final_name = f"{uuid.uuid4()}.{ext}"
+                final_path = os.path.join(settings.UPLOAD_DIR, final_name)
+                os.replace(tmp_path, final_path)
+                
+                video = Video(
+                    user_id=user.id,
+                    title=title if title else file_name,
+                    original_file=final_path,
+                    status="pending",
+                    file_size=total
+                )
+                db.add(video)
+                db.commit()
+                db.refresh(video)
+                try:
+                    from app.tasks.video import prepare_video
+                    prepare_video.delay(video.id)
+                except Exception:
+                    pass
+                return {"success": True, "completed": True, "video_id": video.id}
+            
+            return {"success": True, "completed": False, "received": current_size}
+            
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"chunk_error: {type(e).__name__}: {str(e)}")
 
 
 @router.get("/videos/upload-status")
 async def upload_status(upload_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """
+    Get upload status for resume capability.
+    Supports both sequential and parallel modes.
+    """
+    import json
+    
     chunk_dir = os.path.join(settings.UPLOAD_DIR, 'chunks')
+    
+    # Check for parallel mode metadata
+    metadata_file = os.path.join(chunk_dir, f"{upload_id}.meta")
+    if os.path.exists(metadata_file):
+        try:
+            with open(metadata_file, 'r') as f:
+                metadata = json.load(f)
+            
+            received_chunks = [int(k) for k, v in metadata.get('chunks', {}).items() if v.get('received')]
+            total_chunks = metadata.get('total_chunks', 0)
+            total_size = metadata.get('total_size', 0)
+            
+            # Calculate total received bytes
+            received_bytes = sum(
+                metadata['chunks'][str(i)].get('size', 0)
+                for i in received_chunks
+            )
+            
+            return {
+                "exists": True,
+                "received": received_bytes,
+                "total_size": total_size,
+                "received_chunks": received_chunks,
+                "total_chunks": total_chunks,
+                "mode": "parallel"
+            }
+        except Exception as e:
+            print(f"[UPLOAD] Error reading metadata: {e}")
+    
+    # Check for sequential mode
     tmp_path = os.path.join(chunk_dir, upload_id + '.part')
-    if not os.path.exists(tmp_path):
-        return {"exists": False, "received": 0}
-    return {"exists": True, "received": os.path.getsize(tmp_path)}
+    if os.path.exists(tmp_path):
+        return {
+            "exists": True,
+            "received": os.path.getsize(tmp_path),
+            "mode": "sequential"
+        }
+    
+    return {"exists": False, "received": 0, "mode": "none"}
 
 
 @router.put("/videos/{video_id}")

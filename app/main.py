@@ -51,8 +51,8 @@ if websocket:
 # Static files
 try:
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
-except:
-    pass
+except (OSError, ValueError) as e:
+    print(f"[STARTUP] Warning: Could not mount static files: {e}")
 
 try:
     # Media directory is mounted at /app/media (separate from read-only code at /app/app)
@@ -63,8 +63,8 @@ try:
         app.mount("/media", StaticFiles(directory=media_dir), name="media")
     if os.path.exists(uploads_dir):
         app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
-except:
-    pass
+except (OSError, ValueError) as e:
+    print(f"[STARTUP] Warning: Could not mount media/uploads directories: {e}")
 
 # Startup event
 @app.on_event("startup")
@@ -131,8 +131,8 @@ async def startup():
                     tables_exist = result.scalar()
                     if tables_exist:
                         break
-                except:
-                    pass
+                except Exception:
+                    pass  # Ignore errors during table check
             
             if tables_exist:
                 print("[STARTUP] Tables already exist (created by another worker)")
@@ -176,8 +176,8 @@ async def startup():
         if db:
             try:
                 db.close()
-            except:
-                pass
+            except Exception:
+                pass  # Ignore close errors
     
     # Run migrations
     # Each migration in separate transaction to avoid abort issues
@@ -494,14 +494,14 @@ async def startup():
         try:
             if db:
                 db.rollback()
-        except:
-            pass
+        except Exception:
+            pass  # Ignore rollback errors
     finally:
         try:
             if db:
                 db.close()
-        except:
-            pass
+        except Exception:
+            pass  # Ignore close errors
     # Ensure admin user exists based on env
     # Use advisory lock to prevent race condition when multiple workers start
     db = None
@@ -612,8 +612,8 @@ async def startup():
                         if user:
                             admin_exists = True
                             break
-                    except:
-                        pass
+                    except Exception:
+                        pass  # Ignore errors during admin check
                 
                 if admin_exists:
                     print(f"[STARTUP] Admin user already exists: {admin_email}")
@@ -723,8 +723,8 @@ async def startup():
         if db:
             try:
                 db.close()
-            except:
-                pass
+            except Exception:
+                pass  # Ignore close errors
 
 # Health check
 @app.get("/")

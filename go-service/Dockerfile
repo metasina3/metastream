@@ -1,5 +1,27 @@
 FROM golang:1.21-alpine
 
+# Build arguments for proxy (optional)
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG http_proxy
+ARG https_proxy
+ARG NO_PROXY
+
+# Set proxy environment variables if provided
+ENV HTTP_PROXY=${HTTP_PROXY} \
+    HTTPS_PROXY=${HTTPS_PROXY} \
+    http_proxy=${http_proxy} \
+    https_proxy=${https_proxy} \
+    NO_PROXY=${NO_PROXY}
+
+# Configure Go proxy settings if HTTP_PROXY is set
+# Go uses GOPROXY environment variable, but also respects HTTP_PROXY/HTTPS_PROXY
+RUN if [ -n "$HTTP_PROXY" ]; then \
+        echo "Using proxy for Go module downloads: $HTTP_PROXY"; \
+    else \
+        echo "No proxy configured, using direct connection"; \
+    fi
+
 WORKDIR /app
 
 # Copy go.mod first

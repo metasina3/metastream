@@ -59,6 +59,10 @@ celery_app.conf.update(
             'task': 'app.tasks.stream.check_live_streams',
             'schedule': 60.0,  # Every 60 seconds
         },
+        'monitor-stream-workers': {
+            'task': 'app.tasks.stream.monitor_stream_workers',
+            'schedule': 60.0,  # Every 60 seconds
+        },
         'auto-approve-comments': {
             'task': 'app.tasks.comments.auto_approve_comments',
             'schedule': 5.0,  # Every 5 seconds

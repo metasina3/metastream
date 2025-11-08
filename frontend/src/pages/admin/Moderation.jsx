@@ -290,7 +290,6 @@ export default function AdminModeration() {
           <div className="text-center py-12 text-gray-500">
             <p>هیچ نظری وجود ندارد</p>
             <p className="text-xs mt-2">کامنت‌ها بعد از 15 ثانیه خودکار حذف می‌شوند</p>
-            <p className="text-xs mt-1 text-gray-400">Debug: comments array length = {comments.length}</p>
             <button 
               onClick={() => loadComments()} 
               className="mt-4 px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"

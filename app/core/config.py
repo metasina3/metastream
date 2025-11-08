@@ -87,6 +87,11 @@ class Settings(BaseModel):
     FFMPEG_THREADS: int = int(os.getenv("FFMPEG_THREADS", "6"))
     CPU_RESERVE: int = int(os.getenv("CPU_RESERVE", "2"))
     
+    # ==================== Celery Autoscaler ====================
+    STREAM_WORKER_MIN: int = int(os.getenv("STREAM_WORKER_MIN", "1"))  # Minimum worker processes
+    STREAM_WORKER_MAX: int = int(os.getenv("STREAM_WORKER_MAX", "20"))  # Maximum worker processes
+    STREAM_WORKER_AUTOSCALE: bool = os.getenv("STREAM_WORKER_AUTOSCALE", "true").lower() in ("true", "1", "yes")
+    
     # ==================== Celery ====================
     CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
     CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0")

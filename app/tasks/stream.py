@@ -280,6 +280,50 @@ def start_stream_task(stream_id: int):
 
 
 @shared_task(queue='stream')
+def monitor_stream_workers():
+    """
+    Monitor stream worker status and log statistics.
+    This helps track autoscaler performance and system load.
+    Runs every 60 seconds.
+    """
+    db: Session = SessionLocal()
+    try:
+        now = now_tehran()
+        
+        # Count active streams
+        scheduled_count = db.query(StreamSchedule).filter(
+            StreamSchedule.status == "scheduled"
+        ).count()
+        
+        live_count = db.query(StreamSchedule).filter(
+            StreamSchedule.status == "live"
+        ).count()
+        
+        total_active = scheduled_count + live_count
+        
+        # Get queue length from Redis
+        try:
+            import redis
+            redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
+            queue_length = redis_client.llen('celery')  # Approximate queue length
+        except Exception:
+            queue_length = 0
+        
+        print(f"[MONITOR] Active streams: {total_active} (scheduled: {scheduled_count}, live: {live_count})")
+        print(f"[MONITOR] Queue length: {queue_length}")
+        print(f"[MONITOR] Autoscaler will adjust workers based on queue length and active streams")
+        
+        return {
+            "scheduled": scheduled_count,
+            "live": live_count,
+            "total_active": total_active,
+            "queue_length": queue_length
+        }
+    finally:
+        db.close()
+
+
+@shared_task(queue='stream')
 def check_live_streams():
     """
     Periodic task to check live streams and mark them as ended when duration expires.

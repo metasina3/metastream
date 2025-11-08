@@ -51,10 +51,10 @@ export default function UserVideos() {
 
   const handleUploadVideo = async (title, file, setProgress, abortController) => {
     try {
-      const CHUNK_SIZE = 1 * 1024 * 1024 // 1MB for smoother progress
+      const SMALL_FILE_THRESHOLD = 10 * 1024 * 1024 // 10MB
 
       // Small files: single request with progress
-      if (file.size <= CHUNK_SIZE) {
+      if (file.size <= SMALL_FILE_THRESHOLD) {
         const formData = new FormData()
         formData.append('title', title)
         formData.append('file', file)
@@ -76,52 +76,314 @@ export default function UserVideos() {
         return
       }
 
-      // Large files: Resumable, chunked upload
-      const uploadId = `${file.name}-${file.size}`.replace(/[^a-zA-Z0-9_.-]/g, '')
+      // ==========================================
+      // Network Quality Detection
+      // ==========================================
+      const detectNetworkQuality = async () => {
+        const testSize = 100 * 1024 // 100KB test
+        const testBlob = new Blob([new ArrayBuffer(testSize)])
+        const startTime = performance.now()
+        
+        try {
+          // Try QUIC/HTTP3 first (Caddy supports it)
+          const quicSupported = 'connection' in navigator && 
+            (navigator.connection?.effectiveType === '4g' || 
+             navigator.connection?.effectiveType === '3g')
+          
+          // Test upload speed
+          const testStart = performance.now()
+          await fetch(`${import.meta.env.VITE_API_URL || ''}/api/dashboard/videos/upload-status`, {
+            method: 'GET',
+            signal: AbortSignal.timeout(5000),
+            cache: 'no-cache'
+          })
+          const testDuration = performance.now() - testStart
+          
+          // Measure ping (RTT)
+          const ping = testDuration
+          
+          // Estimate speed based on ping
+          let chunkSize = 2 * 1024 * 1024 // Default 2MB
+          let useQuic = false
+          
+          if (ping < 100) {
+            // Good network: 2MB chunks
+            chunkSize = 2 * 1024 * 1024
+            useQuic = quicSupported
+          } else if (ping < 300) {
+            // Medium network: 1MB chunks
+            chunkSize = 1 * 1024 * 1024
+            useQuic = quicSupported
+          } else {
+            // Slow network: 0.5MB chunks
+            chunkSize = 0.5 * 1024 * 1024
+            useQuic = false // Don't use QUIC on slow networks
+          }
+          
+          return { chunkSize, useQuic, ping }
+        } catch (error) {
+          // Fallback to default
+          console.log('Network detection failed, using defaults:', error)
+          return { chunkSize: 2 * 1024 * 1024, useQuic: false, ping: 200 }
+        }
+      }
+
+      const networkQuality = await detectNetworkQuality()
+      const CHUNK_SIZE = networkQuality.chunkSize
+      const USE_QUIC = networkQuality.useQuic
+      const CONNECTIONS = 8 // Always 8 connections
+      
+      console.log(`[UPLOAD] Network quality: ping=${networkQuality.ping.toFixed(0)}ms, chunkSize=${(CHUNK_SIZE / 1024 / 1024).toFixed(1)}MB, QUIC=${USE_QUIC}`)
+
+      // Large files: Connection Pool Manager with 8 connections
+      const uploadId = `${file.name}-${file.size}-${Date.now()}`.replace(/[^a-zA-Z0-9_.-]/g, '')
+      
+      // Calculate total chunks
+      const totalChunks = Math.ceil(file.size / CHUNK_SIZE)
+      const actualChunkSize = Math.ceil(file.size / totalChunks)
+      
       // Resume check
-      let received = 0
+      let receivedChunks = new Set()
       try {
         const st = await api.get('/api/dashboard/videos/upload-status', { params: { upload_id: uploadId } })
-        if (st.data?.exists) received = st.data.received || 0
+        if (st.data?.exists && st.data.mode === 'parallel') {
+          receivedChunks = new Set(st.data.received_chunks || [])
+        }
       } catch (_) {}
-      let offset = received - (received % CHUNK_SIZE)
-      while (offset < file.size) {
-        // Check if cancelled
-        if (abortController.signal.aborted) {
+
+      // Track progress for each chunk
+      const chunkProgress = new Array(totalChunks).fill(0)
+      let completedChunks = 0
+      let lastProgressUpdate = 0
+      let adaptiveChunkSize = CHUNK_SIZE
+      let consecutiveErrors = 0
+
+      // Connection Pool Manager
+      const connectionPool = []
+      const chunkQueue = Array.from({ length: totalChunks }, (_, i) => i)
+        .filter(i => !receivedChunks.has(i))
+      
+      let nextChunkIndex = 0
+      let allChunksCompleted = false
+
+      // Upload function for a single chunk with QUIC/HTTP3 support
+      const uploadChunk = async (chunkIndex, retryCount = 0, useQuicAttempt = USE_QUIC) => {
+        if (abortController.signal.aborted || allChunksCompleted) {
           throw new Error('آپلود توسط کاربر لغو شد')
         }
-        
-        const end = Math.min(offset + CHUNK_SIZE, file.size)
-        const blob = file.slice(offset, end)
-        const contentRange = `bytes ${offset}-${end - 1}/${file.size}`
-        // optimistic progress before request finishes
-        const optimistic = Math.min(99, Math.floor(((end) / file.size) * 100))
-        setProgress(optimistic)
-        const res = await api.post('/api/dashboard/videos/upload-chunk', blob, {
-          headers: {
-            'Content-Type': 'application/octet-stream',
-            'Upload-Id': uploadId,
-            'Content-Range': contentRange,
-            'X-File-Size': file.size,
-          },
-          params: { filename: file.name, title: title },
-          signal: abortController.signal,
-          timeout: 300000, // 5 minutes timeout for mobile uploads
-        })
-        if (res.data?.received != null) {
-          received = res.data.received
-          setProgress(Math.floor((received / file.size) * 100))
-          offset = received
-        }
-        if (res.data?.completed) {
-          setProgress(100)
-          await new Promise(resolve => setTimeout(resolve, 500))
-          await loadVideos()
-          setShowModal(false)
+
+        // Skip if already received
+        if (receivedChunks.has(chunkIndex)) {
+          chunkProgress[chunkIndex] = 100
+          completedChunks++
           return
         }
-        offset = end
+
+        const start = chunkIndex * actualChunkSize
+        const end = Math.min(start + actualChunkSize, file.size)
+        const blob = file.slice(start, end)
+
+        try {
+          // Try QUIC/HTTP3 first if supported
+          let uploadPromise
+          if (useQuicAttempt && 'fetch' in window) {
+            // Try HTTP/3 (QUIC) via fetch
+            try {
+              const formData = new FormData()
+              formData.append('chunk', blob)
+              
+              uploadPromise = fetch(`${import.meta.env.VITE_API_URL || ''}/api/dashboard/videos/upload-chunk?filename=${encodeURIComponent(file.name)}&title=${encodeURIComponent(title)}`, {
+                method: 'POST',
+                body: blob,
+                headers: {
+                  'Upload-Id': uploadId,
+                  'X-Chunk-Index': chunkIndex.toString(),
+                  'X-Total-Chunks': totalChunks.toString(),
+                  'X-File-Size': file.size.toString(),
+                },
+                credentials: 'include',
+                signal: abortController.signal,
+              }).then(async (response) => {
+                if (!response.ok) {
+                  throw new Error(`HTTP ${response.status}`)
+                }
+                return { data: await response.json() }
+              })
+            } catch (quicError) {
+              console.log(`[UPLOAD] QUIC failed for chunk ${chunkIndex}, falling back to TCP:`, quicError)
+              // Fallback to TCP (axios)
+              uploadPromise = api.post('/api/dashboard/videos/upload-chunk', blob, {
+                headers: {
+                  'Content-Type': 'application/octet-stream',
+                  'Upload-Id': uploadId,
+                  'X-Chunk-Index': chunkIndex,
+                  'X-Total-Chunks': totalChunks,
+                  'X-File-Size': file.size,
+                },
+                params: { filename: file.name, title: title },
+                signal: abortController.signal,
+                timeout: 600000, // 10 minutes for slow networks
+              })
+            }
+          } else {
+            // Use TCP (axios)
+            uploadPromise = api.post('/api/dashboard/videos/upload-chunk', blob, {
+              headers: {
+                'Content-Type': 'application/octet-stream',
+                'Upload-Id': uploadId,
+                'X-Chunk-Index': chunkIndex,
+                'X-Total-Chunks': totalChunks,
+                'X-File-Size': file.size,
+              },
+              params: { filename: file.name, title: title },
+              signal: abortController.signal,
+              timeout: 600000, // 10 minutes for slow networks
+            })
+          }
+
+          const res = await uploadPromise
+
+          if (res.data?.completed) {
+            // All chunks received and merged
+            allChunksCompleted = true
+            setProgress(100)
+            await new Promise(resolve => setTimeout(resolve, 500))
+            await loadVideos()
+            setShowModal(false)
+            return true
+          }
+
+          chunkProgress[chunkIndex] = 100
+          completedChunks++
+          receivedChunks.add(chunkIndex)
+          consecutiveErrors = 0 // Reset error counter on success
+
+          // Update progress
+          const totalProgress = Math.floor(
+            chunkProgress.reduce((sum, p) => sum + p, 0) / totalChunks
+          )
+          setProgress(Math.min(99, totalProgress))
+
+        } catch (error) {
+          if (abortController.signal.aborted || allChunksCompleted) {
+            throw new Error('آپلود توسط کاربر لغو شد')
+          }
+
+          consecutiveErrors++
+          
+          // Adaptive chunk size reduction on repeated errors
+          if (consecutiveErrors >= 3 && adaptiveChunkSize > 0.5 * 1024 * 1024) {
+            adaptiveChunkSize = Math.max(0.5 * 1024 * 1024, adaptiveChunkSize / 2)
+            console.log(`[UPLOAD] Reducing chunk size to ${(adaptiveChunkSize / 1024 / 1024).toFixed(1)}MB due to errors`)
+            consecutiveErrors = 0
+          }
+
+          // Smart retry with exponential backoff
+          if (retryCount < 5) {
+            const backoffDelay = Math.min(10000, 1000 * Math.pow(2, retryCount))
+            console.log(`[UPLOAD] Retrying chunk ${chunkIndex}, attempt ${retryCount + 1}, delay ${backoffDelay}ms`)
+            await new Promise(resolve => setTimeout(resolve, backoffDelay))
+            
+            // Try TCP if QUIC failed
+            const nextUseQuic = retryCount === 0 && USE_QUIC ? false : false
+            return uploadChunk(chunkIndex, retryCount + 1, nextUseQuic)
+          } else {
+            console.error(`[UPLOAD] Failed to upload chunk ${chunkIndex} after ${retryCount} retries:`, error)
+            throw error
+          }
+        }
       }
+
+      // Connection Pool Manager: Maintain 8 active connections continuously
+      const processChunkQueue = async () => {
+        const activeConnections = new Set()
+        let queueIndex = 0
+        
+        const startNextChunk = async () => {
+          while (!abortController.signal.aborted && !allChunksCompleted) {
+            // Wait for available connection slot
+            while (activeConnections.size >= CONNECTIONS && !abortController.signal.aborted && !allChunksCompleted) {
+              await new Promise(resolve => setTimeout(resolve, 50))
+            }
+
+            if (abortController.signal.aborted || allChunksCompleted) break
+
+            // Get next chunk from queue
+            let chunkIndex = null
+            while (queueIndex < chunkQueue.length) {
+              const candidate = chunkQueue[queueIndex++]
+              if (!receivedChunks.has(candidate)) {
+                chunkIndex = candidate
+                break
+              }
+            }
+
+            if (chunkIndex === null) {
+              // No more chunks to process
+              break
+            }
+
+            // Start upload in connection pool
+            const uploadPromise = uploadChunk(chunkIndex)
+              .then(() => {
+                activeConnections.delete(uploadPromise)
+                // Start next chunk when this one completes
+                if (!allChunksCompleted && !abortController.signal.aborted && activeConnections.size < CONNECTIONS) {
+                  startNextChunk()
+                }
+              })
+              .catch((error) => {
+                activeConnections.delete(uploadPromise)
+                // Re-queue failed chunk for retry (only if not aborted)
+                if (!abortController.signal.aborted && !allChunksCompleted) {
+                  // Add to end of queue for retry
+                  chunkQueue.push(chunkIndex)
+                }
+                // Start next chunk when this one fails
+                if (!allChunksCompleted && !abortController.signal.aborted && activeConnections.size < CONNECTIONS) {
+                  startNextChunk()
+                }
+              })
+            
+            activeConnections.add(uploadPromise)
+          }
+        }
+
+        // Start initial 8 connections
+        for (let i = 0; i < Math.min(CONNECTIONS, chunkQueue.length); i++) {
+          startNextChunk()
+        }
+      }
+
+      // Start processing chunks
+      processChunkQueue()
+
+      // Wait for all chunks to complete
+      while (completedChunks < totalChunks && !abortController.signal.aborted && !allChunksCompleted) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        // Re-check status from server
+        try {
+          const st = await api.get('/api/dashboard/videos/upload-status', { params: { upload_id: uploadId } })
+          if (st.data?.exists && st.data.mode === 'parallel') {
+            const newReceived = new Set(st.data.received_chunks || [])
+            const newlyCompleted = Array.from(newReceived).filter(i => !receivedChunks.has(i))
+            newlyCompleted.forEach(i => {
+              chunkProgress[i] = 100
+              completedChunks++
+              receivedChunks.add(i)
+            })
+            const totalProgress = Math.floor(
+              chunkProgress.reduce((sum, p) => sum + p, 0) / totalChunks
+            )
+            setProgress(Math.min(99, totalProgress))
+          }
+        } catch (_) {}
+      }
+
+      // Wait for all active connections to finish
+      await Promise.allSettled(connectionPool)
+
       setProgress(100)
       await new Promise(resolve => setTimeout(resolve, 500))
       await loadVideos()

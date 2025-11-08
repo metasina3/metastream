@@ -719,31 +719,31 @@ export default function Player() {
           // Mobile Layout
           <div className="space-y-6">
             {/* Player */}
-            <div className={`rounded-lg overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-black'}`}>
+            <div className={`rounded-lg overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
               {streamStatus === 'countdown' && countdown ? (
                 <div className="aspect-video flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-4xl font-bold mb-2">
+                    <div className={`text-4xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                       {String(countdown.hours).padStart(2, '0')}:
                       {String(countdown.minutes).padStart(2, '0')}:
                       {String(countdown.seconds).padStart(2, '0')}
                     </div>
-                    <p className="text-lg">تا شروع پخش زنده</p>
+                    <p className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>تا شروع پخش زنده</p>
                   </div>
                 </div>
               ) : streamStatus === 'preparing' ? (
                 <div className="aspect-video flex items-center justify-center">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                    <p className="text-lg mb-2">لایو در حال آماده‌سازی است</p>
-                    <p className="text-sm text-gray-400">لطفاً صبر کنید، پخش به زودی شروع می‌شود</p>
-                    <p className="text-xs text-gray-500 mt-2">⏱️ تا شروع پخش چند لحظه صبر کنید</p>
+                    <p className={`text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>لایو در حال آماده‌سازی است</p>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>لطفاً صبر کنید، پخش به زودی شروع می‌شود</p>
+                    <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>⏱️ تا شروع پخش چند لحظه صبر کنید</p>
                   </div>
                 </div>
               ) : streamStatus === 'ended' ? (
                 <div className="aspect-video flex items-center justify-center">
                   <div className="text-center">
-                    <p className="text-lg">پخش زنده به پایان رسید</p>
+                    <p className={`text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>پخش زنده به پایان رسید</p>
                   </div>
                 </div>
               ) : streamStatus === 'live' ? (
@@ -753,7 +753,7 @@ export default function Player() {
                   ) : (
                     <div className="flex items-center justify-center h-full">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                      <p className="ml-3 text-gray-500">در حال بارگذاری پلیر...</p>
+                      <p className={`ml-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>در حال بارگذاری پلیر...</p>
                     </div>
                   )}
                 </div>
@@ -812,31 +812,31 @@ export default function Player() {
             {/* Player Section (Right) */}
             <div className="lg:col-span-2 space-y-4">
               {/* Player */}
-              <div className={`rounded-lg overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-black'}`}>
+              <div className={`rounded-lg overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
                 {streamStatus === 'countdown' && countdown ? (
                   <div className="aspect-video flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-6xl font-bold mb-4">
+                      <div className={`text-6xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                         {String(countdown.hours).padStart(2, '0')}:
                         {String(countdown.minutes).padStart(2, '0')}:
                         {String(countdown.seconds).padStart(2, '0')}
                       </div>
-                      <p className="text-xl">تا شروع پخش زنده</p>
+                      <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>تا شروع پخش زنده</p>
                     </div>
                   </div>
                 ) : streamStatus === 'preparing' ? (
                   <div className="aspect-video flex items-center justify-center">
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                      <p className="text-xl mb-2">لایو در حال آماده‌سازی است</p>
-                      <p className="text-sm text-gray-400">لطفاً صبر کنید، پخش به زودی شروع می‌شود</p>
-                      <p className="text-xs text-gray-500 mt-2">⏱️ تا شروع پخش چند لحظه صبر کنید</p>
+                      <p className={`text-xl mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>لایو در حال آماده‌سازی است</p>
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>لطفاً صبر کنید، پخش به زودی شروع می‌شود</p>
+                      <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>⏱️ تا شروع پخش چند لحظه صبر کنید</p>
                     </div>
                   </div>
                 ) : streamStatus === 'ended' ? (
                   <div className="aspect-video flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-xl">پخش زنده به پایان رسید</p>
+                      <p className={`text-xl ${darkMode ? 'text-white' : 'text-gray-900'}`}>پخش زنده به پایان رسید</p>
                     </div>
                   </div>
                 ) : streamStatus === 'live' ? (

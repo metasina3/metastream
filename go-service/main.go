@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +18,7 @@ import (
 var rdb *redis.Client
 var ctx = context.Background()
 var persianSwear *PersianSwear
+var allowedOrigins []string
 
 func init() {
 	// Initialize Redis client
@@ -34,6 +37,37 @@ func init() {
 	// Initialize PersianSwear filter
 	persianSwear = NewPersianSwear()
 	log.Printf("[GO] PersianSwear filter initialized with %d words", len(persianSwear.swearWords))
+
+	// Load allowed origins from environment
+	loadAllowedOrigins()
+}
+
+func loadAllowedOrigins() {
+	// Always include localhost for development
+	allowedOrigins = []string{
+		"http://localhost:5173",
+		"http://localhost:3000",
+		"http://127.0.0.1:5173",
+		"http://127.0.0.1:3000",
+	}
+
+	// Read CORS_ORIGINS from environment
+	corsOriginsEnv := os.Getenv("CORS_ORIGINS")
+	if corsOriginsEnv != "" {
+		// Split by comma and trim spaces
+		origins := strings.Split(corsOriginsEnv, ",")
+		for _, origin := range origins {
+			origin = strings.TrimSpace(origin)
+			if origin != "" {
+				allowedOrigins = append(allowedOrigins, origin)
+			}
+		}
+		log.Printf("[GO] Loaded %d allowed origins from CORS_ORIGINS", len(origins))
+	} else {
+		log.Printf("[GO] Warning: CORS_ORIGINS not set, using localhost only")
+	}
+
+	log.Printf("[GO] Total allowed origins: %d", len(allowedOrigins))
 }
 
 type CheckUpdateRequest struct {
@@ -225,9 +259,23 @@ func checkSwear(c *gin.Context) {
 
 func corsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		origin := c.GetHeader("Origin")
+		
+		// Check if origin is allowed
+		allowed := false
+		for _, allowedOrigin := range allowedOrigins {
+			if origin == allowedOrigin {
+				allowed = true
+				break
+			}
+		}
+		
+		if allowed {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+		}
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
@@ -239,7 +287,11 @@ func corsMiddleware() gin.HandlerFunc {
 }
 
 func main() {
-	r := gin.Default()
+	// Set release mode for production (must be before gin.New())
+	gin.SetMode(gin.ReleaseMode)
+	
+	r := gin.New()
+	r.Use(gin.Recovery()) // Add recovery middleware
 	r.Use(corsMiddleware())
 
 	// Routes
