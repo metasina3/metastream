@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authAPI } from '../utils/api'
 import { useAuth } from '../hooks/useAuth.jsx'
+import Logo from '../components/Logo.jsx'
+import DarkModeToggle from '../components/DarkModeToggle'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -33,58 +35,71 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 to-primary-700">
-      <div className="card max-w-md w-full">
-        <div className="flex flex-col items-center mb-6">
-          <img 
-            src="/logo.png" 
-            alt="Meta Stream Logo" 
-            className="w-16 h-16 object-contain mb-3 flex-shrink-0"
-            loading="eager"
-            onError={(e) => {
-              e.target.style.display = 'none'
-            }}
-          />
-          <h2 className="text-2xl font-bold text-center text-primary-600">
-            ورود به Meta Stream
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-primary opacity-20"></div>
+      
+      {/* Dark Mode Toggle - Top Right */}
+      <div className="absolute top-6 left-6 z-10">
+        <DarkModeToggle />
+      </div>
+      
+      {/* Login Card */}
+      <div className="card max-w-md w-full relative z-10">
+        <div className="flex flex-col items-center mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Logo size="lg" showText={false} />
+            <div className="flex flex-col">
+              <h1 className="text-3xl font-bold text-gradient">
+                MetaStream
+              </h1>
+              <p className="text-sm font-medium text-text-primary mt-1">
+                Co-Streaming Platform
+              </p>
+            </div>
+          </div>
+          <h2 className="text-2xl font-semibold text-center text-text-primary">
+            ورود
           </h2>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+          <div className="glass rounded-xl px-4 py-3 mb-6 border border-red-500/50 text-red-500">
             {error}
           </div>
         )}
 
         <form onSubmit={handleLogin}>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">ایمیل یا شماره</label>
+            <label className="block text-sm font-medium mb-2 text-text-primary">ایمیل یا شماره</label>
             <input
               type="text"
               value={identity}
               onChange={(e) => setIdentity(e.target.value)}
               className="input w-full"
               placeholder="admin@example.com یا 0912xxxxxxx"
+              dir="ltr"
               required
             />
           </div>
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">رمز عبور</label>
+            <label className="block text-sm font-medium mb-2 text-text-primary">رمز عبور</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="input w-full"
               placeholder="••••••••"
+              dir="ltr"
               required
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary w-full"
+            className="btn-primary w-full relative"
           >
-            {loading ? 'در حال ورود...' : 'ورود'}
+            <span className="relative z-10">{loading ? 'در حال ورود...' : 'ورود'}</span>
           </button>
         </form>
       </div>

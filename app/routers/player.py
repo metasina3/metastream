@@ -289,35 +289,48 @@ async def submit_comment(
         raise HTTPException(status_code=400, detail="Invalid viewer data")
     
     # Check for swear words using Go service (default enabled) - SYNC CHECK BEFORE SAVING
+    # Fail open: If Go service is unavailable, allow comment but log warning
     try:
-        import httpx
+        import requests
         from app.core.config import settings
         
         # Get Go service URL from environment (default to localhost:9000)
         go_service_url = os.getenv("GO_SERVICE_URL", "http://go-service:9000")
         
-        # Use sync client to check immediately (blocking)
-        with httpx.Client(timeout=2.0) as client:
-            check_response = client.post(
-                f"{go_service_url}/check-swear",
-                json={"text": message},
-                headers={"Content-Type": "application/json"}
-            )
-            
-            if check_response.status_code == 200:
-                check_data = check_response.json()
-                if check_data.get("has_swear", False):
-                    # Comment contains swear words - reject immediately (don't save)
-                    print(f"[COMMENT] Comment rejected due to swear words (stream_id={stream.id}, message_length={len(message)})")
-                    # Return success but don't save - user won't see their comment
-                    return {
-                        "success": True,
-                        "comment": None,
-                        "message": "Comment submitted"
-                    }
+        # Use requests to check immediately (blocking)
+        # Increased timeout to 5 seconds for better reliability
+        # Disable proxy for internal service calls (go-service is in same Docker network)
+        check_response = requests.post(
+            f"{go_service_url}/check-swear",
+            json={"text": message},
+            headers={"Content-Type": "application/json"},
+            timeout=5.0,
+            proxies={"http": None, "https": None}  # Disable proxy for internal calls
+        )
+        
+        if check_response.status_code == 200:
+            check_data = check_response.json()
+            if check_data.get("has_swear", False):
+                # Comment contains swear words - reject immediately (don't save)
+                print(f"[COMMENT] Comment rejected due to swear words (stream_id={stream.id}, message_length={len(message)})")
+                # Return success but don't save - user won't see their comment
+                return {
+                    "success": True,
+                    "comment": None,
+                    "message": "Comment submitted"
+                }
+        else:
+            # Non-200 response - log warning but allow comment (fail open)
+            print(f"[COMMENT] ⚠️ Go service returned status {check_response.status_code}, allowing comment anyway (stream_id={stream.id})")
+    except requests.Timeout:
+        # Timeout - log warning but allow comment (fail open)
+        print(f"[COMMENT] ⚠️ Go service timeout, allowing comment anyway (stream_id={stream.id})")
+    except requests.RequestException as e:
+        # Connection error - log warning but allow comment (fail open)
+        print(f"[COMMENT] ⚠️ Go service connection error: {e}, allowing comment anyway (stream_id={stream.id})")
     except Exception as e:
-        # If Go service is unavailable, log but continue (fail open)
-        print(f"[COMMENT] Error checking swear words: {e}, continuing anyway")
+        # Other errors - log warning but allow comment (fail open)
+        print(f"[COMMENT] ⚠️ Error checking swear words: {e}, allowing comment anyway (stream_id={stream.id})")
     
     # Create comment (pending approval - will be published after 15 seconds if approved)
     from datetime import timedelta

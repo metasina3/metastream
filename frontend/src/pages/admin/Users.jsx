@@ -95,7 +95,7 @@ export default function AdminUsers() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8 md:ml-20">
         <h1 className="text-3xl font-bold">مدیریت کاربران</h1>
         <button
           onClick={async () => {

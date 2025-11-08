@@ -36,7 +36,7 @@ export default function AdminStats() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">آمار و گزارش‌ها</h1>
+      <h1 className="text-3xl font-bold mb-8 md:ml-20">آمار و گزارش‌ها</h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="card">

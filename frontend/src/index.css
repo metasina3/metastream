@@ -2,28 +2,359 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   MetaStream Color System - CSS Variables
+   ============================================ */
+
+:root {
+  /* Light Mode - Gradient Background (Not Pure White) */
+  --bg-background: linear-gradient(135deg, #F4F7FB 0%, #EAF4FF 50%, #F0F9FF 100%);
+  --bg-surface: rgba(255, 255, 255, 0.95);
+  --bg-glass: rgba(255, 255, 255, 0.2);
+  --text-primary: #1A1A1A;
+  --text-secondary: #555555;
+  --border-color: rgba(0, 198, 255, 0.15);
+  --border-glow: rgba(0, 198, 255, 0.4);
+  
+  /* Gradients */
+  --primary-gradient: linear-gradient(135deg, #00B2FF 0%, #8A4FFF 100%);
+  --primary-gradient-light: linear-gradient(135deg, #00B2FF 0%, #8A4FFF 100%);
+  --gradient-glow: linear-gradient(135deg, #00C6FF 0%, #3AE7FF 50%, #7B2FF7 100%);
+  --bg-gradient-light: linear-gradient(135deg, #F4F7FB 0%, #EAF4FF 50%, #F0F9FF 100%);
+  
+  /* Colors */
+  --accent-color: #00C6FF;
+  --accent-hover: #3AE7FF;
+  --error-color: #FF4B91;
+  --glow-color: #3AE7FF;
+  
+  /* Shadows */
+  --shadow-glow: 0 0 20px rgba(0, 198, 255, 0.3);
+  --shadow-glow-lg: 0 0 30px rgba(0, 198, 255, 0.5);
+  --shadow-glow-purple: 0 0 20px rgba(123, 47, 247, 0.3);
+  --shadow-glow-accent: 0 0 25px rgba(58, 231, 255, 0.4);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --shadow-neon: 0 0 10px rgba(0, 198, 255, 0.5), 0 0 20px rgba(0, 198, 255, 0.3), 0 0 30px rgba(0, 198, 255, 0.2);
+}
+
+.dark {
+  /* Dark Mode - Deep Space Background */
+  --bg-background: linear-gradient(135deg, #0C0E14 0%, #141821 50%, #0F1117 100%);
+  --bg-surface: rgba(20, 24, 33, 0.8);
+  --bg-glass: rgba(20, 24, 33, 0.3);
+  --text-primary: #E5E5E5;
+  --text-secondary: #9DA9B9;
+  --border-color: rgba(58, 231, 255, 0.2);
+  --border-glow: rgba(58, 231, 255, 0.4);
+  
+  /* Gradients */
+  --primary-gradient: linear-gradient(135deg, #00C6FF 0%, #7B2FF7 100%);
+  --primary-gradient-light: linear-gradient(135deg, #00C6FF 0%, #7B2FF7 100%);
+  --gradient-glow: linear-gradient(135deg, #00C6FF 0%, #3AE7FF 50%, #7B2FF7 100%);
+  --bg-gradient-dark: linear-gradient(135deg, #0C0E14 0%, #141821 50%, #0F1117 100%);
+  
+  /* Colors */
+  --accent-color: #3AE7FF;
+  --accent-hover: #00C6FF;
+  --error-color: #FF4B91;
+  --glow-color: #3AE7FF;
+  
+  /* Shadows */
+  --shadow-glow: 0 0 20px rgba(0, 198, 255, 0.4);
+  --shadow-glow-lg: 0 0 40px rgba(0, 198, 255, 0.6);
+  --shadow-glow-purple: 0 0 25px rgba(123, 47, 247, 0.4);
+  --shadow-glow-accent: 0 0 30px rgba(58, 231, 255, 0.5);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-neon: 0 0 15px rgba(0, 198, 255, 0.6), 0 0 30px rgba(0, 198, 255, 0.4), 0 0 45px rgba(0, 198, 255, 0.2);
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
 @layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
   body {
-    @apply bg-gray-50 text-gray-900;
+    background: var(--bg-background);
+    color: var(--text-primary);
     font-family: 'Vazir', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 100vh;
+    background-attachment: fixed;
   }
 }
 
+/* ============================================
+   Component Styles
+   ============================================ */
+
 @layer components {
+  /* Neon Glow Primary Button */
   .btn-primary {
-    @apply bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors duration-200;
+    @apply px-8 py-4 rounded-2xl font-semibold text-white transition-all duration-300 relative overflow-hidden;
+    background: var(--primary-gradient);
+    box-shadow: var(--shadow-glow);
+    position: relative;
   }
   
+  .btn-primary::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl;
+    background: var(--gradient-glow);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+  }
+  
+  .btn-primary > * {
+    position: relative;
+    z-index: 10;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+  
+  .btn-primary:hover {
+    box-shadow: var(--shadow-glow-lg);
+    transform: translateY(-2px) scale(1.02);
+  }
+  
+  .btn-primary:hover::before {
+    opacity: 0.6;
+  }
+  
+  .btn-primary:active {
+    transform: translateY(0) scale(1);
+  }
+  
+  .btn-primary:active::before {
+    opacity: 0.8;
+  }
+  
+  /* Glassmorphism Secondary Button */
   .btn-secondary {
-    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors duration-200;
+    @apply px-8 py-4 rounded-2xl font-semibold transition-all duration-300;
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-glass);
   }
   
+  .btn-secondary:hover {
+    border-color: var(--border-glow);
+    box-shadow: var(--shadow-glow-accent);
+    transform: translateY(-1px);
+  }
+  
+  /* Accent Glow Button */
+  .btn-accent {
+    @apply px-8 py-4 rounded-2xl font-semibold text-white transition-all duration-300;
+    background: var(--accent-color);
+    box-shadow: var(--shadow-glow-accent);
+  }
+  
+  .btn-accent:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-neon);
+    transform: translateY(-2px) scale(1.05);
+  }
+  
+  /* Glassmorphism Card */
   .card {
-    @apply bg-white rounded-lg shadow-md p-6;
+    @apply rounded-2xl p-8 transition-all duration-300;
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-glass);
   }
   
+  .card:hover {
+    border-color: var(--border-glow);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-4px);
+  }
+  
+  /* Floating Input with Glow */
   .input {
-    @apply border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none;
+    @apply rounded-xl px-5 py-3 transition-all duration-300 outline-none;
+    background: var(--bg-glass);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .input:focus {
+    border-color: var(--accent-color);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
+  
+  .input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+  }
+  
+  /* Gradient Text with Animation - Very Slow */
+  .text-gradient {
+    background: linear-gradient(90deg, #00C6FF 0%, #7B2FF7 50%, #00C6FF 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-position: 0% 0%;
+    animation: shimmer-very-slow 20s linear infinite;
+  }
+  
+  /* Slow Water Flow Animation for Logo Text */
+  .text-gradient-slow {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 300% auto;
+    animation: shimmer-slow 8s linear infinite;
+  }
+  
+  /* Glassmorphism Surface */
+  .glass {
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-glass);
+  }
+  
+  /* Neon Glow Effect */
+  .glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .glow-lg {
+    box-shadow: var(--shadow-glow-lg);
+  }
+  
+  .glow-neon {
+    box-shadow: var(--shadow-neon);
+  }
+  
+  /* Play Button with Glowing Ring */
+  .btn-play {
+    @apply w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 relative;
+    background: var(--primary-gradient);
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .btn-play::before {
+    content: '';
+    @apply absolute inset-0 rounded-full;
+    border: 2px solid var(--accent-color);
+    opacity: 0;
+    transform: scale(1.2);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-play:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-neon);
+  }
+  
+  .btn-play:hover::before {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+  
+  /* Surface with Gradient Border */
+  .surface-gradient {
+    @apply relative rounded-2xl p-8;
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  
+  .surface-gradient::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl;
+    background: var(--primary-gradient);
+    opacity: 0.1;
+    z-index: -1;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+@layer utilities {
+  .bg-gradient-primary {
+    background: var(--primary-gradient);
+  }
+  
+  .text-accent {
+    color: var(--accent-color);
+  }
+  
+  .border-accent {
+    border-color: var(--accent-color);
+  }
+  
+  .border-glow {
+    border-color: var(--border-glow);
+  }
+  
+  /* Shimmer Animation for Gradient Text */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+  
+  /* Slow Water Flow Animation */
+  @keyframes shimmer-slow {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  
+  /* Very Slow Animation for MetaStream - Left to Right */
+  @keyframes shimmer-very-slow {
+    0% {
+      background-position: -200% 0%;
+    }
+    100% {
+      background-position: 200% 0%;
+    }
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 3s linear infinite;
+  }
+  
+  .animate-shimmer-slow {
+    animation: shimmer-slow 8s linear infinite;
+  }
+  
+  .animate-shimmer-very-slow {
+    animation: shimmer-very-slow 20s linear infinite;
   }
 }
 

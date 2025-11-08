@@ -65,7 +65,7 @@ export default function AdminApprovals() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">درخواست‌ها</h1>
+        <h1 className="text-2xl font-bold md:ml-20">درخواست‌ها</h1>
         <div className="flex gap-2">
           <select value={type} onChange={(e) => { setPage(1); setType(e.target.value) }} className="input">
             <option value="all">همه نوع</option>

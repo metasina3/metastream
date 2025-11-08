@@ -66,7 +66,7 @@ export default function UserChannels() {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8 md:ml-20">
         <h1 className="text-2xl sm:text-3xl font-bold">مدیریت کانال‌ها</h1>
         <button
           onClick={() => setShowModal(true)}

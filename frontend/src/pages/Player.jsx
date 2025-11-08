@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { playerAPI, dashboardAPI } from '../utils/api'
+import { useDarkMode } from '../hooks/useDarkMode'
 import { 
   ChatBubbleLeftRightIcon, 
   UserGroupIcon,
@@ -14,12 +15,8 @@ import axios from 'axios'
 export default function Player() {
   const { channelSlug } = useParams()  // This will be aparat_username
   const navigate = useNavigate()
+  const { darkMode, toggleDarkMode } = useDarkMode()
   const [streamData, setStreamData] = useState(null)
-  const [darkMode, setDarkMode] = useState(() => {
-    // Get from localStorage or default to false
-    const saved = localStorage.getItem('darkMode')
-    return saved ? saved === 'true' : false
-  })
   const [showMenu, setShowMenu] = useState(false)
   const [showRegisterModal, setShowRegisterModal] = useState(false)
   const [comments, setComments] = useState([])
@@ -85,16 +82,7 @@ export default function Player() {
     }
   }, [channelSlug])
 
-  // Apply dark mode
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('darkMode', 'true')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('darkMode', 'false')
-    }
-  }, [darkMode])
+  // Dark mode is now managed by useDarkMode hook
 
   // Start heartbeat and polling for all active stream states
   useEffect(() => {
@@ -544,10 +532,6 @@ export default function Player() {
     loadPlayerData()
   }
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode)
-  }
-
   // Render Aparat embed
   const renderAparatPlayer = () => {
     if (!streamData?.channel?.aparat_username) return null
@@ -577,7 +561,7 @@ export default function Player() {
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     )
@@ -586,10 +570,10 @@ export default function Player() {
   // Show channel info even if no stream
   if (streamStatus === 'channel_not_found') {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4 text-red-500">کانال پیدا نشد</h1>
-          <p className="text-gray-500">لطفا آدرس را بررسی کنید</p>
+          <p className="text-text-secondary">لطفا آدرس را بررسی کنید</p>
         </div>
       </div>
     )
@@ -597,14 +581,14 @@ export default function Player() {
 
   if (streamStatus === 'cancelled') {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4 text-orange-500">استریم لغو شده</h1>
           {streamData?.stream?.error_message && (
             <p className="text-red-500 mb-2">{streamData.stream.error_message}</p>
           )}
-          <p className="text-gray-500 mb-2">این استریم لغو شده است</p>
-          <p className="text-sm text-gray-400">لطفا استریم دیگری را انتخاب کنید</p>
+          <p className="text-text-secondary mb-2">این استریم لغو شده است</p>
+          <p className="text-sm text-text-secondary">لطفا استریم دیگری را انتخاب کنید</p>
         </div>
       </div>
     )
@@ -612,11 +596,11 @@ export default function Player() {
 
   if (streamStatus === 'no_stream' && streamData?.channel) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">کانال: {streamData.channel.owner_name || streamData.channel.name}</h1>
-          <p className="text-gray-500 mb-2">در حال حاضر استریمی فعال نیست</p>
-          <p className="text-sm text-gray-400">لطفا بعدا تلاش کنید</p>
+          <p className="text-text-secondary mb-2">در حال حاضر استریمی فعال نیست</p>
+          <p className="text-sm text-text-secondary">لطفا بعدا تلاش کنید</p>
         </div>
       </div>
     )
@@ -624,10 +608,10 @@ export default function Player() {
 
   if (!streamData) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">خطا در بارگذاری</h1>
-          <p className="text-gray-500">لطفا دوباره تلاش کنید</p>
+          <p className="text-text-secondary">لطفا دوباره تلاش کنید</p>
         </div>
       </div>
     )
@@ -636,16 +620,16 @@ export default function Player() {
   const isMobile = window.innerWidth < 1024
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+    <div className="min-h-screen bg-bg text-text-primary">
       {/* Header */}
-      <header className={`sticky top-0 z-50 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
+      <header className="sticky top-0 z-50 bg-bg-surface shadow-md border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Left: Hamburger Menu + Live Indicator */}
           <div className="flex items-center gap-3">
             <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="p-2 rounded-lg hover:bg-bg transition-colors"
               >
                 <Bars3Icon className="w-6 h-6" />
               </button>
@@ -658,17 +642,17 @@ export default function Player() {
                     onClick={() => setShowMenu(false)}
                   />
                   {/* Menu */}
-                  <div className={`absolute right-0 top-full mt-2 w-48 rounded-lg shadow-lg z-50 ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                  <div className="absolute right-0 top-full mt-2 w-48 rounded-lg shadow-lg z-50 bg-bg-surface border border-border">
                     <button
                       onClick={handleLogout}
-                      className="w-full text-right px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      className="w-full text-right px-4 py-2 hover:bg-bg flex items-center gap-2 text-text-primary transition-colors"
                     >
                       <XMarkIcon className="w-4 h-4" />
                       خروج
                     </button>
                     <button
                       onClick={toggleDarkMode}
-                      className="w-full text-right px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      className="w-full text-right px-4 py-2 hover:bg-bg flex items-center gap-2 text-text-primary transition-colors"
                     >
                       {darkMode ? <SunIcon className="w-4 h-4" /> : <MoonIcon className="w-4 h-4" />}
                       {darkMode ? 'حالت روشن' : 'حالت تاریک'}
@@ -685,7 +669,7 @@ export default function Player() {
                   streamStatus === 'countdown' || streamStatus === 'preparing' ? 'bg-yellow-500' :
                   streamStatus === 'live' ? 'bg-red-500' :
                   streamStatus === 'ended' ? 'bg-orange-500' :
-                  'bg-gray-400'
+                  'bg-text-secondary'
                 }`}></div>
                 <span className="text-xs font-medium">
                   {streamStatus === 'countdown' ? 'در انتظار' :
@@ -719,31 +703,31 @@ export default function Player() {
           // Mobile Layout
           <div className="space-y-6">
             {/* Player */}
-            <div className={`rounded-lg overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+            <div className="rounded-lg overflow-hidden bg-bg-surface border border-border">
               {streamStatus === 'countdown' && countdown ? (
                 <div className="aspect-video flex items-center justify-center">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <div className="text-4xl font-bold mb-2 text-text-primary">
                       {String(countdown.hours).padStart(2, '0')}:
                       {String(countdown.minutes).padStart(2, '0')}:
                       {String(countdown.seconds).padStart(2, '0')}
                     </div>
-                    <p className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>تا شروع پخش زنده</p>
+                    <p className="text-lg text-text-secondary">تا شروع پخش زنده</p>
                   </div>
                 </div>
               ) : streamStatus === 'preparing' ? (
                 <div className="aspect-video flex items-center justify-center">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                    <p className={`text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>لایو در حال آماده‌سازی است</p>
-                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>لطفاً صبر کنید، پخش به زودی شروع می‌شود</p>
-                    <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>⏱️ تا شروع پخش چند لحظه صبر کنید</p>
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-accent mx-auto mb-4"></div>
+                    <p className="text-lg mb-2 text-text-primary">لایو در حال آماده‌سازی است</p>
+                    <p className="text-sm text-text-secondary">لطفاً صبر کنید، پخش به زودی شروع می‌شود</p>
+                    <p className="text-xs mt-2 text-text-secondary">⏱️ تا شروع پخش چند لحظه صبر کنید</p>
                   </div>
                 </div>
               ) : streamStatus === 'ended' ? (
                 <div className="aspect-video flex items-center justify-center">
                   <div className="text-center">
-                    <p className={`text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>پخش زنده به پایان رسید</p>
+                    <p className="text-lg text-text-primary">پخش زنده به پایان رسید</p>
                   </div>
                 </div>
               ) : streamStatus === 'live' ? (
@@ -752,8 +736,8 @@ export default function Player() {
                     renderAparatPlayer()
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                      <p className={`ml-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>در حال بارگذاری پلیر...</p>
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+                      <p className="ml-3 text-text-secondary">در حال بارگذاری پلیر...</p>
                     </div>
                   )}
                 </div>
@@ -762,12 +746,12 @@ export default function Player() {
 
             {/* Title and Caption */}
             {streamData.stream && (
-              <div className={`rounded-lg p-4 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className="rounded-lg p-4 bg-bg-surface border border-border">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h1 className="text-xl font-bold mb-2">{streamData.stream.title}</h1>
                     {streamData.stream.caption && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{streamData.stream.caption}</p>
+                      <p className="text-sm text-text-secondary">{streamData.stream.caption}</p>
                     )}
                   </div>
                   {/* Cancel button for live streams - will be shown to channel owner */}
@@ -812,31 +796,31 @@ export default function Player() {
             {/* Player Section (Right) */}
             <div className="lg:col-span-2 space-y-4">
               {/* Player */}
-              <div className={`rounded-lg overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+              <div className="rounded-lg overflow-hidden bg-bg-surface border border-border">
                 {streamStatus === 'countdown' && countdown ? (
                   <div className="aspect-video flex items-center justify-center">
                     <div className="text-center">
-                      <div className={`text-6xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <div className="text-6xl font-bold mb-4 text-text-primary">
                         {String(countdown.hours).padStart(2, '0')}:
                         {String(countdown.minutes).padStart(2, '0')}:
                         {String(countdown.seconds).padStart(2, '0')}
                       </div>
-                      <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>تا شروع پخش زنده</p>
+                      <p className="text-xl text-text-secondary">تا شروع پخش زنده</p>
                     </div>
                   </div>
                 ) : streamStatus === 'preparing' ? (
                   <div className="aspect-video flex items-center justify-center">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                      <p className={`text-xl mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>لایو در حال آماده‌سازی است</p>
-                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>لطفاً صبر کنید، پخش به زودی شروع می‌شود</p>
-                      <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>⏱️ تا شروع پخش چند لحظه صبر کنید</p>
+                      <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-accent mx-auto mb-4"></div>
+                      <p className="text-xl mb-2 text-text-primary">لایو در حال آماده‌سازی است</p>
+                      <p className="text-sm text-text-secondary">لطفاً صبر کنید، پخش به زودی شروع می‌شود</p>
+                      <p className="text-xs mt-2 text-text-secondary">⏱️ تا شروع پخش چند لحظه صبر کنید</p>
                     </div>
                   </div>
                 ) : streamStatus === 'ended' ? (
                   <div className="aspect-video flex items-center justify-center">
                     <div className="text-center">
-                      <p className={`text-xl ${darkMode ? 'text-white' : 'text-gray-900'}`}>پخش زنده به پایان رسید</p>
+                      <p className="text-xl text-text-primary">پخش زنده به پایان رسید</p>
                     </div>
                   </div>
                 ) : streamStatus === 'live' ? (
@@ -848,12 +832,12 @@ export default function Player() {
 
               {/* Title and Caption */}
               {streamData.stream && (
-                <div className={`rounded-lg p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                <div className="rounded-lg p-6 bg-bg-surface border border-border">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h1 className="text-2xl font-bold mb-2">{streamData.stream.title}</h1>
                       {streamData.stream.caption && (
-                        <p className="text-gray-600 dark:text-gray-400">{streamData.stream.caption}</p>
+                        <p className="text-text-secondary">{streamData.stream.caption}</p>
                       )}
                     </div>
                     {/* Cancel button for live streams - will be shown to channel owner */}
@@ -923,15 +907,15 @@ function CommentsSection({ stream, viewer, comments, newComment, setNewComment, 
   if (!stream) return null
 
   return (
-    <div className={`rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} flex flex-col h-[600px]`}>
+    <div className="rounded-lg bg-bg-surface border border-border flex flex-col h-[600px]">
       {/* Header with Viewer Count */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <ChatBubbleLeftRightIcon className="w-5 h-5 text-primary-600" />
+            <ChatBubbleLeftRightIcon className="w-5 h-5 text-accent" />
             <h2 className="text-lg font-semibold">گفتگوی زنده</h2>
           </div>
-          <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-1 text-sm text-text-secondary">
             <UserGroupIcon className="w-4 h-4" />
             <span>{viewerCount} بیننده</span>
           </div>
@@ -943,7 +927,7 @@ function CommentsSection({ stream, viewer, comments, newComment, setNewComment, 
         <>
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {comments.length === 0 ? (
-              <p className="text-center text-gray-400 py-8">هنوز نظری وجود ندارد</p>
+              <p className="text-center text-text-secondary py-8">هنوز نظری وجود ندارد</p>
             ) : (
               comments.map((comment) => (
                 <div
@@ -957,8 +941,8 @@ function CommentsSection({ stream, viewer, comments, newComment, setNewComment, 
                           ? 'bg-primary-600 text-white'
                           : 'bg-primary-100 text-primary-900'
                         : darkMode
-                        ? 'bg-gray-700 text-white'
-                        : 'bg-gray-100 text-gray-900'
+                        ? 'bg-bg text-text-primary'
+                        : 'bg-bg-surface text-text-primary'
                     }`}
                   >
                     <p className={`font-medium text-sm mb-1 ${
@@ -982,11 +966,11 @@ function CommentsSection({ stream, viewer, comments, newComment, setNewComment, 
           </div>
 
           {/* Comment Input or Registration Form */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-4 border-t border-border">
             {(!viewer || viewer?.needs_registration) && !showRegForm ? (
               // Show registration prompt - always show if needs registration or viewer is null
               <div className="text-center space-y-3">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-text-secondary">
                   برای ارسال نظر، لطفاً ثبت‌نام کنید
                 </p>
                 <button
@@ -999,7 +983,7 @@ function CommentsSection({ stream, viewer, comments, newComment, setNewComment, 
             ) : (!viewer || viewer?.needs_registration) && showRegForm ? (
               // Inline registration form
               <div className="space-y-3">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                <p className="text-sm text-text-secondary mb-2">
                   نام و شماره همراه خود را وارد کنید:
                 </p>
                 <input
@@ -1008,7 +992,7 @@ function CommentsSection({ stream, viewer, comments, newComment, setNewComment, 
                   value={localName}
                   onChange={(e) => setLocalName(e.target.value)}
                   className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary-500 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
+                    'bg-bg-surface border-border text-text-primary'
                   }`}
                 />
                 <input
@@ -1022,7 +1006,7 @@ function CommentsSection({ stream, viewer, comments, newComment, setNewComment, 
                   }}
                   maxLength={11}
                   className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary-500 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
+                    'bg-bg-surface border-border text-text-primary'
                   }`}
                   dir="ltr"
                 />
@@ -1059,8 +1043,8 @@ function CommentsSection({ stream, viewer, comments, newComment, setNewComment, 
                     onClick={() => setShowRegForm(false)}
                     className={`px-4 py-2 border rounded-lg ${
                       darkMode
-                        ? 'border-gray-600 hover:bg-gray-700'
-                        : 'border-gray-300 hover:bg-gray-100'
+                        ? 'border-accent hover:bg-bg'
+                        : 'border-border hover:bg-bg'
                     }`}
                   >
                     انصراف
@@ -1078,8 +1062,8 @@ function CommentsSection({ stream, viewer, comments, newComment, setNewComment, 
                     placeholder="نظر خود را بنویسید..."
                     className={`flex-1 px-3 py-2 rounded-lg border ${
                       darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-white border-gray-300'
+                        ? 'bg-bg border-accent text-text-primary'
+                        : 'bg-bg-surface border-border text-text-primary'
                     }`}
                   />
                   <button
@@ -1095,7 +1079,7 @@ function CommentsSection({ stream, viewer, comments, newComment, setNewComment, 
         </>
       ) : (
         <div className="flex-1 flex items-center justify-center p-8">
-          <p className="text-center text-gray-500 dark:text-gray-400">
+          <p className="text-center text-text-secondary">
             گفت‌وگو برای این لایو غیرفعال است
           </p>
         </div>
@@ -1130,9 +1114,9 @@ function RegisterModal({ onRegister, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-        <h2 className="text-2xl font-bold mb-4">ورود به پخش زنده</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+      <div className="bg-bg-surface border border-border rounded-lg p-6 max-w-md w-full mx-4">
+        <h2 className="text-2xl font-bold mb-4 text-text-primary">ورود به پخش زنده</h2>
+        <p className="text-sm text-text-secondary mb-4">
           برای ثبت نظر، لطفا اطلاعات خود را وارد کنید
         </p>
         

@@ -402,3 +402,58 @@ def stop_stream(stream_id: int):
     finally:
         db.close()
 
+
+@shared_task(queue='stream')
+def update_max_viewers():
+    """
+    Periodic task to update max_viewers in database from Redis.
+    Redis handles real-time calculations and caching.
+    This task periodically saves the maximum viewer count to database.
+    Runs every 2 minutes.
+    """
+    db: Session = SessionLocal()
+    try:
+        import redis
+        redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
+        
+        # Get all live streams
+        live_streams = db.query(StreamSchedule).filter(
+            StreamSchedule.status == "live"
+        ).all()
+        
+        if not live_streams:
+            return {"updated": 0, "checked": 0}
+        
+        updated_count = 0
+        for stream in live_streams:
+            try:
+                # Get online count from Redis (same key used by Go service)
+                online_key = f"online:{stream.id}"
+                online_count = redis_client.scard(online_key)
+                
+                # Update max_viewers if current count is higher
+                if online_count > stream.max_viewers:
+                    old_max = stream.max_viewers
+                    stream.max_viewers = online_count
+                    updated_count += 1
+                    print(f"[VIEWERS] Stream {stream.id} ({stream.title}): Updated max_viewers from {old_max} to {online_count}")
+            
+            except Exception as e:
+                print(f"[VIEWERS] Error updating max_viewers for stream {stream.id}: {e}")
+                continue
+        
+        if updated_count > 0:
+            db.commit()
+            print(f"[VIEWERS] Updated max_viewers for {updated_count} streams")
+        
+        return {
+            "updated": updated_count,
+            "checked": len(live_streams)
+        }
+    
+    except Exception as e:
+        print(f"[VIEWERS] Error in update_max_viewers task: {e}")
+        return {"error": str(e), "updated": 0, "checked": 0}
+    finally:
+        db.close()
+

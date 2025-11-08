@@ -66,7 +66,7 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">داشبورد مدیریت</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 md:ml-20">داشبورد مدیریت</h1>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {cards.map((card, index) => (

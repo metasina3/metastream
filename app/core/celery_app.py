@@ -63,6 +63,10 @@ celery_app.conf.update(
             'task': 'app.tasks.stream.monitor_stream_workers',
             'schedule': 60.0,  # Every 60 seconds
         },
+        'update-max-viewers': {
+            'task': 'app.tasks.stream.update_max_viewers',
+            'schedule': 120.0,  # Every 2 minutes
+        },
         'auto-approve-comments': {
             'task': 'app.tasks.comments.auto_approve_comments',
             'schedule': 5.0,  # Every 5 seconds

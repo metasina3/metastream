@@ -125,12 +125,12 @@ export default function Streams() {
 
   const getStatusBadge = (status, error = null) => {
     const badges = {
-      scheduled: { text: 'زمان‌بندی شده', class: 'bg-blue-100 text-blue-700' },
-      live: { text: 'در حال پخش', class: 'bg-green-100 text-green-700' },
-      ended: { text: 'پایان یافته', class: 'bg-gray-100 text-gray-700' },
-      cancelled: { text: error ? 'خطا: ' + (error.length > 50 ? error.substring(0, 50) + '...' : error) : 'لغو شده', class: 'bg-red-100 text-red-700' }
+      scheduled: { text: 'زمان‌بندی شده', class: 'bg-blue-500/20 text-blue-400 dark:bg-blue-500/30 dark:text-blue-300' },
+      live: { text: 'در حال پخش', class: 'bg-green-500/20 text-green-400 dark:bg-green-500/30 dark:text-green-300' },
+      ended: { text: 'پایان یافته', class: 'bg-gray-500/20 text-gray-600 dark:bg-gray-500/30 dark:text-gray-400' },
+      cancelled: { text: error ? 'خطا: ' + (error.length > 50 ? error.substring(0, 50) + '...' : error) : 'لغو شده', class: 'bg-red-500/20 text-red-600 dark:bg-red-500/30 dark:text-red-400' }
     }
-    const badge = badges[status] || { text: status, class: 'bg-gray-100 text-gray-700' }
+    const badge = badges[status] || { text: status, class: 'bg-gray-500/20 text-gray-600 dark:bg-gray-500/30 dark:text-gray-400' }
     return <span className={`px-2 py-1 rounded text-xs ${badge.class}`} title={error || ''}>{badge.text}</span>
   }
 
@@ -141,8 +141,8 @@ export default function Streams() {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold">مدیریت استریم‌ها</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8 md:ml-20">
+        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">مدیریت استریم‌ها</h1>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <button
             onClick={loadStreams}
@@ -170,14 +170,14 @@ export default function Streams() {
         ) : streams.length > 0 ? (
           <div className="space-y-4">
             {streams.map((stream) => (
-              <div key={stream.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50">
+              <div key={stream.id} className="border border-border rounded-lg p-3 sm:p-4 hover:border-glow transition-colors bg-bg-surface">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-3">
                   <div className="flex-1 w-full">
-                    <h3 className="text-base sm:text-lg font-bold mb-1">{stream.title}</h3>
+                    <h3 className="text-base sm:text-lg font-bold mb-1 text-text-primary">{stream.title}</h3>
                     {stream.caption && (
-                      <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">{stream.caption}</p>
+                      <p className="text-xs sm:text-sm text-text-secondary mb-2 line-clamp-2">{stream.caption}</p>
                     )}
-                    <div className="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+                    <div className="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-text-secondary">
                       <span className="flex items-center gap-1">
                         <CalendarIcon className="w-4 h-4" />
                         {formatDate(stream.start_time)}
@@ -187,43 +187,43 @@ export default function Streams() {
                         {formatDuration(stream.duration)}
                       </span>
                       {stream.status === 'live' && viewerCounts[stream.id] !== undefined && (
-                        <span className="flex items-center gap-1 text-green-600">
+                        <span className="flex items-center gap-1 text-green-500 dark:text-green-400">
                           👥 {viewerCounts[stream.id]} بیننده
                         </span>
                       )}
                       {stream.ended_at && (
-                        <span className="text-gray-500">
+                        <span className="text-text-secondary">
                           پایان: {formatDate(new Date(new Date(stream.ended_at).getTime() + 5 * 60 * 1000).toISOString())}
                         </span>
                       )}
                       {stream.status === 'scheduled' && stream.start_time && stream.duration && (
-                        <span className="text-gray-500">
+                        <span className="text-text-secondary">
                           پایان تقریبی: {formatDate(new Date(new Date(stream.start_time).getTime() + stream.duration * 1000 + 5 * 60 * 1000).toISOString())}
                         </span>
                       )}
                       {stream.status === 'live' && stream.started_at && stream.duration && (
-                        <span className="text-gray-500">
+                        <span className="text-text-secondary">
                           پایان تقریبی: {formatDate(new Date(new Date(stream.started_at).getTime() + stream.duration * 1000 + 5 * 60 * 1000).toISOString())}
                         </span>
                       )}
                       {stream.channel && (
-                        <span>کانال: <strong>{stream.channel.name}</strong></span>
+                        <span>کانال: <strong className="text-text-primary">{stream.channel.name}</strong></span>
                       )}
                       {stream.allow_comments && (
-                        <span className="text-green-600">✓ کامنت فعال</span>
+                        <span className="text-green-500 dark:text-green-400">✓ کامنت فعال</span>
                       )}
                     </div>
                   </div>
                   {getStatusBadge(stream.status, stream.error_message)}
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-2 mt-3 pt-3 border-t">
+                <div className="flex flex-col sm:flex-row gap-2 mt-3 pt-3 border-t border-border">
                   <div className="flex gap-2 flex-1">
                     <input
                       type="text"
                       value={stream.play_link}
                       readOnly
-                      className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 border rounded text-xs sm:text-sm bg-gray-50 min-w-0"
+                      className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 border border-border rounded text-xs sm:text-sm bg-bg-surface text-text-primary min-w-0"
                       dir="ltr"
                     />
                     <button
@@ -259,7 +259,7 @@ export default function Streams() {
                             }
                           }
                         }}
-                        className="btn-secondary text-xs sm:text-sm bg-red-50 text-red-700 hover:bg-red-100 px-2 sm:px-3 py-1.5 sm:py-2"
+                        className="btn-secondary text-xs sm:text-sm bg-red-500/20 text-red-600 dark:bg-red-500/30 dark:text-red-400 hover:bg-red-500/30 dark:hover:bg-red-500/40 px-2 sm:px-3 py-1.5 sm:py-2"
                         title="لغو استریم"
                       >
                         ❌ لغو
@@ -298,8 +298,8 @@ export default function Streams() {
                         }}
                         className={`btn-secondary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 ${
                           stream.allow_comments 
-                            ? 'bg-green-50 text-green-700' 
-                            : 'bg-gray-50 text-gray-700'
+                            ? 'bg-green-500/20 text-green-600 dark:bg-green-500/30 dark:text-green-400' 
+                            : 'bg-gray-500/20 text-gray-600 dark:bg-gray-500/30 dark:text-gray-400'
                         }`}
                         title={stream.allow_comments ? 'غیرفعال کردن کامنت' : 'فعال کردن کامنت'}
                       >
@@ -311,7 +311,7 @@ export default function Streams() {
                 </div>
 
                 {stream.video && (
-                  <div className="mt-2 text-xs text-gray-500">
+                  <div className="mt-2 text-xs text-text-secondary">
                     ویدیو: {stream.video.title}
                   </div>
                 )}
@@ -319,8 +319,8 @@ export default function Streams() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-500">
-            <VideoCameraIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <div className="text-center py-12 text-text-secondary">
+            <VideoCameraIcon className="w-16 h-16 mx-auto mb-4 text-text-secondary opacity-50" />
             <p>هیچ استریمی وجود ندارد</p>
             <button
               onClick={() => setShowModal(true)}
@@ -483,7 +483,7 @@ function CreateStreamModal({ onClose, onSubmit, preSelectedVideoId }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="card max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-4">ایجاد استریم جدید</h2>
+        <h2 className="text-2xl font-bold mb-4 text-text-primary">ایجاد استریم جدید</h2>
 
         {loading ? (
           <div className="text-center py-8">در حال بارگذاری...</div>
@@ -517,7 +517,7 @@ function CreateStreamModal({ onClose, onSubmit, preSelectedVideoId }) {
                 ))}
               </select>
               {preSelectedVideoId && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-text-secondary mt-1">
                   ⚠️ ویدیو انتخاب شده و قابل تغییر نیست
                 </p>
               )}
@@ -542,7 +542,7 @@ function CreateStreamModal({ onClose, onSubmit, preSelectedVideoId }) {
                 ))}
               </select>
               {channels.length === 0 && (
-                <p className="text-xs text-red-500 mt-1">
+                <p className="text-xs text-red-500 dark:text-red-400 mt-1">
                   شما هیچ کانال تایید شده‌ای ندارید
                 </p>
               )}
@@ -588,7 +588,7 @@ function CreateStreamModal({ onClose, onSubmit, preSelectedVideoId }) {
                 className="input"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-text-secondary mt-1">
                 ⏰ حداقل 2 دقیقه از الان بعد
               </p>
             </div>
@@ -609,17 +609,17 @@ function CreateStreamModal({ onClose, onSubmit, preSelectedVideoId }) {
 
             {/* Selected Video Info */}
             {selectedVideo && (
-              <div className="bg-blue-50 p-3 rounded text-sm">
-                <p className="font-medium mb-1">📹 ویدیو انتخاب شده:</p>
-                <p>{selectedVideo.title}</p>
-                <p className="text-gray-600">
+              <div className="bg-blue-500/20 dark:bg-blue-500/30 p-3 rounded text-sm border border-blue-500/30">
+                <p className="font-medium mb-1 text-text-primary">📹 ویدیو انتخاب شده:</p>
+                <p className="text-text-primary">{selectedVideo.title}</p>
+                <p className="text-text-secondary">
                   مدت زمان: {Math.floor(selectedVideo.duration / 60)} دقیقه و {selectedVideo.duration % 60} ثانیه
                 </p>
               </div>
             )}
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded">
+              <div className="bg-red-500/20 dark:bg-red-500/30 border border-red-500/50 text-red-600 dark:text-red-400 p-3 rounded">
                 {error}
               </div>
             )}

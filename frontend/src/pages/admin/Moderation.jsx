@@ -1,9 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { moderationAPI } from '../../utils/api'
+import { useAuth } from '../../hooks/useAuth'
+import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 
 export default function AdminModeration() {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const streamId = searchParams.get('stream') || searchParams.get('streamId')
   const [comments, setComments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -253,11 +257,30 @@ export default function AdminModeration() {
     }
   }
 
+  const handleBack = () => {
+    // Navigate back to streams page based on user role
+    if (user?.role === 'admin') {
+      navigate('/admin')
+    } else {
+      navigate('/dashboard/streams')
+    }
+  }
+
   if (!streamId) {
     return (
       <div className="text-center py-12">
-        <h1 className="text-2xl font-bold mb-4">مدیریت نظرات</h1>
-        <p className="text-gray-500">لطفا stream ID را وارد کنید</p>
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <button
+            onClick={handleBack}
+            className="btn-secondary flex items-center gap-2 px-4 py-2 text-sm"
+            title="بازگشت به صفحه استریم‌ها"
+          >
+            <ArrowLeftIcon className="w-5 h-5" />
+            <span>بازگشت</span>
+          </button>
+          <h1 className="text-2xl font-bold text-text-primary md:ml-20">مدیریت نظرات</h1>
+        </div>
+        <p className="text-text-secondary">لطفا stream ID را وارد کنید</p>
       </div>
     )
   }
@@ -269,69 +292,79 @@ export default function AdminModeration() {
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6">
       <div className="mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">مدیریت نظرات</h1>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
+        <div className="flex items-center gap-4 mb-4">
+          <button
+            onClick={handleBack}
+            className="btn-secondary flex items-center gap-2 px-4 py-2 text-sm"
+            title="بازگشت به صفحه استریم‌ها"
+          >
+            <ArrowLeftIcon className="w-5 h-5" />
+            <span>بازگشت</span>
+          </button>
+          <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">مدیریت نظرات</h1>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-text-secondary md:ml-20">
           <span>استریم ID: {streamId}</span>
           <span className="hidden sm:inline">•</span>
           <span>تعداد کامنت‌ها: {comments.length}</span>
           <span className="hidden sm:inline">•</span>
-          <span className="text-yellow-600 text-xs sm:text-sm">⚠️ هر کامنت بعد از 15 ثانیه خودکار حذف می‌شود</span>
+          <span className="text-yellow-600 dark:text-yellow-400 text-xs sm:text-sm">⚠️ هر کامنت بعد از 15 ثانیه خودکار حذف می‌شود</span>
         </div>
       </div>
       
       {/* Simple Line-by-Line Comments List */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-bg-surface rounded-lg border border-border shadow-glass">
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-4 text-gray-500">در حال بارگذاری کامنت‌ها...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
+            <p className="mt-4 text-text-secondary">در حال بارگذاری کامنت‌ها...</p>
           </div>
         ) : comments.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-text-secondary">
             <p>هیچ نظری وجود ندارد</p>
             <p className="text-xs mt-2">کامنت‌ها بعد از 15 ثانیه خودکار حذف می‌شوند</p>
             <button 
               onClick={() => loadComments()} 
-              className="mt-4 px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"
+              className="btn-primary mt-4 px-4 py-2 text-sm"
             >
               🔄 دوباره بارگذاری
             </button>
           </div>
         ) : (
-          <div className="divide-y">
+          <div className="divide-y divide-border">
             {comments.map((comment, index) => {
               return (
                 <div 
                   key={comment.id} 
-                  className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 p-2 sm:p-3 hover:bg-gray-50 transition-colors"
+                  className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 p-2 sm:p-3 hover:bg-bg transition-colors border-b border-border last:border-b-0"
                 >
                   {/* Row Number */}
                   <div className="flex-shrink-0 w-8 sm:w-12 text-center">
-                    <span className="text-xs sm:text-sm font-mono text-gray-500">{index + 1}</span>
+                    <span className="text-xs sm:text-sm font-mono text-text-secondary">{index + 1}</span>
                   </div>
                   
                   {/* Username */}
                   <div className="flex-shrink-0 w-full sm:w-32">
-                    <span className="text-xs sm:text-sm font-medium text-gray-900 truncate block">
+                    <span className="text-xs sm:text-sm font-medium text-text-primary truncate block">
                       {comment.username}
                     </span>
                   </div>
                   
                   {/* Phone */}
                   <div className="flex-shrink-0 w-full sm:w-32">
-                    <span className="text-xs text-gray-500 font-mono">{comment.phone}</span>
+                    <span className="text-xs text-text-secondary font-mono">{comment.phone}</span>
                   </div>
                   
                   {/* Message */}
                   <div className="flex-1 min-w-0 w-full sm:w-auto">
-                    <p className="text-xs sm:text-sm text-gray-800 break-words sm:truncate">{comment.message}</p>
+                    <p className="text-xs sm:text-sm text-text-primary break-words sm:truncate">{comment.message}</p>
                   </div>
                   
                   {/* Delete Button - Always visible, right after message */}
                   <div className="flex-shrink-0 w-full sm:w-auto">
                     <button
                       onClick={() => handleDelete(comment.id)}
-                      className="w-full sm:w-auto px-2 sm:px-3 py-1 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 transition-colors"
+                      className="w-full sm:w-auto px-2 sm:px-3 py-1 bg-red-500/20 dark:bg-red-500/30 text-red-600 dark:text-red-400 text-xs font-medium rounded hover:bg-red-500/30 dark:hover:bg-red-500/40 border border-red-500/30 dark:border-red-500/40 transition-colors"
                       title="حذف فوری"
                     >
                       حذف
@@ -345,7 +378,7 @@ export default function AdminModeration() {
       </div>
       
       {comments.length >= 100 && (
-        <p className="text-center text-sm text-orange-600 mt-4">
+        <p className="text-center text-sm text-orange-600 dark:text-orange-400 mt-4">
           ⚠️ حداکثر 100 کامنت نمایش داده می‌شود
         </p>
       )}
