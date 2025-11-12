@@ -810,9 +810,14 @@ function VideoUploadModal({ onClose, onSubmit }) {
             />
           </div>
           {(uploading || progress > 0) && (
-            <div className="mb-4 w-full bg-gray-200 rounded">
-              <div className="h-2 bg-primary-600 rounded" style={{ width: `${progress}%` }}></div>
-              <div className="text-xs text-gray-500 mt-1">{progress}%</div>
+            <div className="mb-4 w-full">
+              <div className="w-full bg-bg-glass rounded-full overflow-hidden border border-border">
+                <div 
+                  className="h-2 bg-gradient-primary rounded-full transition-all duration-300" 
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+              <div className="text-xs text-text-secondary mt-1 text-center">{progress}%</div>
             </div>
           )}
           {error && <div className="text-red-600 text-sm mb-2">{error}</div>}

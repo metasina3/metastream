@@ -103,7 +103,7 @@ export default function Layout() {
             {isMobile && (
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="p-2 hover:bg-bg rounded-lg transition-colors"
+                className="p-2 hover:bg-bg-glass rounded-lg transition-colors"
               >
                 <XMarkIcon className="w-6 h-6 text-text-primary" />
               </button>
@@ -117,7 +117,7 @@ export default function Layout() {
               key={item.path}
               to={item.path}
               onClick={() => isMobile && setSidebarOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bg transition-colors mb-2 text-text-primary group"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-bg-glass transition-colors mb-2 text-text-primary group"
             >
               <item.icon className="w-5 h-5 flex-shrink-0 text-text-secondary group-hover:text-accent transition-colors" />
               <span className="text-sm">{item.label}</span>
@@ -145,7 +145,7 @@ export default function Layout() {
           <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-4 py-3 flex items-center justify-between flex-wrap gap-2 border-b border-amber-200 dark:border-amber-800">
             <span className="text-sm">شما در حالت ورود به کاربر هستید</span>
             <button
-              className="btn-secondary text-xs px-3 py-1"
+              className="btn-secondary text-xs px-3 py-1 ml-auto"
               onClick={async () => {
                 try {
                   await adminAPI.revertImpersonation()

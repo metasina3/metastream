@@ -404,6 +404,94 @@ def stop_stream(stream_id: int):
 
 
 @shared_task(queue='stream')
+def kill_stream_process(stream_id: int):
+    """
+    Kill FFmpeg process for a specific stream.
+    This runs in the stream worker container where FFmpeg processes are running.
+    """
+    try:
+        import redis
+        import signal
+        import os
+        import time
+        
+        redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
+        pid_key = f"stream:pid:{stream_id}"
+        pid_str = redis_client.get(pid_key)
+        
+        if pid_str:
+            pid = int(pid_str)
+            print(f"[STREAM] Killing FFmpeg process {pid} for stream {stream_id}...")
+            
+            try:
+                # Try to kill the process group (FFmpeg and its children)
+                try:
+                    pgid = os.getpgid(pid)
+                    os.killpg(pgid, signal.SIGTERM)
+                    print(f"[STREAM] Sent SIGTERM to process group {pgid} (PID {pid})")
+                except ProcessLookupError:
+                    print(f"[STREAM] Process {pid} not found (may have already terminated)")
+                    redis_client.delete(pid_key)
+                    return {"success": True, "message": "Process already terminated"}
+                except OSError as e:
+                    # If getpgid fails, try killing the process directly
+                    print(f"[STREAM] Could not get process group, trying direct kill: {e}")
+                    try:
+                        os.kill(pid, signal.SIGTERM)
+                        print(f"[STREAM] Sent SIGTERM to process {pid}")
+                    except ProcessLookupError:
+                        print(f"[STREAM] Process {pid} not found")
+                        redis_client.delete(pid_key)
+                        return {"success": True, "message": "Process already terminated"}
+                
+                # Wait a bit, then force kill if still alive
+                time.sleep(2)
+                
+                try:
+                    pgid = os.getpgid(pid)
+                    os.killpg(pgid, signal.SIGKILL)
+                    print(f"[STREAM] Sent SIGKILL to process group {pgid}")
+                except ProcessLookupError:
+                    print(f"[STREAM] Process {pid} already terminated")
+                except OSError:
+                    try:
+                        os.kill(pid, signal.SIGKILL)
+                        print(f"[STREAM] Sent SIGKILL to process {pid}")
+                    except ProcessLookupError:
+                        print(f"[STREAM] Process {pid} already terminated")
+                
+                # Cleanup zombie processes by waiting for them
+                # This prevents zombie processes from accumulating
+                try:
+                    # Wait for the process to fully terminate (non-blocking)
+                    # This reaps the zombie process
+                    os.waitpid(pid, os.WNOHANG)
+                    # Also try to wait for any child processes in the process group
+                    try:
+                        os.waitpid(-pgid, os.WNOHANG)
+                    except (OSError, ProcessLookupError):
+                        pass
+                except (OSError, ProcessLookupError, ChildProcessError):
+                    # Process already reaped or not a child of this process
+                    pass
+                
+            except Exception as kill_error:
+                print(f"[STREAM] Error killing process {pid}: {kill_error}")
+            
+            # Remove PID from Redis
+            redis_client.delete(pid_key)
+            print(f"[STREAM] Removed PID from Redis")
+            return {"success": True, "message": f"Process {pid} killed successfully"}
+        else:
+            print(f"[STREAM] No PID found in Redis for stream {stream_id}")
+            return {"success": False, "message": "No PID found in Redis"}
+            
+    except Exception as e:
+        print(f"[STREAM] Error in kill_stream_process: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@shared_task(queue='stream')
 def update_max_viewers():
     """
     Periodic task to update max_viewers in database from Redis.

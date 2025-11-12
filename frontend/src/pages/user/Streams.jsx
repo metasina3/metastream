@@ -47,13 +47,40 @@ export default function Streams() {
     }
   }, [streams])
 
+  const sortStreamsByPriority = (streams) => {
+    // Priority order: live > scheduled > ended > cancelled
+    const priorityOrder = {
+      'live': 1,
+      'scheduled': 2,
+      'ended': 3,
+      'cancelled': 4
+    }
+    
+    return [...streams].sort((a, b) => {
+      // First, sort by status priority
+      const priorityA = priorityOrder[a.status] || 99
+      const priorityB = priorityOrder[b.status] || 99
+      
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB
+      }
+      
+      // If same priority, sort by start_time (newer first)
+      const timeA = new Date(a.start_time).getTime()
+      const timeB = new Date(b.start_time).getTime()
+      return timeB - timeA
+    })
+  }
+
   const loadStreams = async (showLoading = true) => {
     try {
       if (showLoading) {
         setLoading(true)
       }
       const response = await dashboardAPI.getStreams()
-      setStreams(response.data.streams || [])
+      const unsortedStreams = response.data.streams || []
+      const sortedStreams = sortStreamsByPriority(unsortedStreams)
+      setStreams(sortedStreams)
     } catch (error) {
       console.error('Failed to load streams:', error)
     } finally {

@@ -366,41 +366,34 @@ async def cancel_stream(
     if stream.status == "live":
         print(f"[DASHBOARD] Cancelling live stream {stream_id}, killing FFmpeg process...")
         try:
-            import redis
-            import signal
-            import os
-            redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
-            pid_key = f"stream:pid:{stream_id}"
-            pid_str = redis_client.get(pid_key)
-            
-            if pid_str:
-                pid = int(pid_str)
-                print(f"[DASHBOARD] Found FFmpeg PID {pid} in Redis, killing process...")
-                try:
-                    # Try to kill the process group (FFmpeg and its children)
-                    os.killpg(os.getpgid(pid), signal.SIGTERM)
-                    print(f"[DASHBOARD] Sent SIGTERM to process group {pid}")
-                    # Wait a bit, then force kill if still alive
-                    time.sleep(2)
-                    try:
-                        os.killpg(os.getpgid(pid), signal.SIGKILL)
-                        print(f"[DASHBOARD] Sent SIGKILL to process group {pid}")
-                    except ProcessLookupError:
-                        print(f"[DASHBOARD] Process {pid} already terminated")
-                except ProcessLookupError:
-                    print(f"[DASHBOARD] Process {pid} not found (may have already terminated)")
-                except PermissionError:
-                    print(f"[DASHBOARD] Permission denied killing process {pid}")
-                except Exception as kill_error:
-                    print(f"[DASHBOARD] Error killing process {pid}: {kill_error}")
+            from app.tasks.stream import kill_stream_process
+            # Use Celery task to kill the process in the correct container
+            kill_result = kill_stream_process.delay(stream_id)
+            print(f"[DASHBOARD] Sent kill task to Celery: {kill_result.id}")
+            # Wait a bit for the kill to complete
+            time.sleep(1)
+        except Exception as kill_error:
+            print(f"[DASHBOARD] Warning: Could not kill FFmpeg process via task: {kill_error}")
+            # Try direct kill as fallback
+            try:
+                import redis
+                import signal
+                import os
+                redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
+                pid_key = f"stream:pid:{stream_id}"
+                pid_str = redis_client.get(pid_key)
                 
-                # Remove PID from Redis
-                redis_client.delete(pid_key)
-                print(f"[DASHBOARD] Removed PID from Redis")
-            else:
-                print(f"[DASHBOARD] No PID found in Redis for stream {stream_id}")
-        except Exception as redis_error:
-            print(f"[DASHBOARD] Warning: Could not kill FFmpeg process: {redis_error}")
+                if pid_str:
+                    pid = int(pid_str)
+                    try:
+                        os.killpg(os.getpgid(pid), signal.SIGTERM)
+                        time.sleep(1)
+                        os.killpg(os.getpgid(pid), signal.SIGKILL)
+                    except:
+                        pass
+                    redis_client.delete(pid_key)
+            except:
+                pass
             # Continue anyway - mark as cancelled
     
     stream.status = "cancelled"

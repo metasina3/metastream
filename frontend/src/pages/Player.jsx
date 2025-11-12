@@ -182,11 +182,13 @@ export default function Player() {
           return
         }
 
-        const hours = Math.floor(diff / (1000 * 60 * 60))
+        // Calculate total hours (including days), minutes, seconds
+        const totalHours = Math.floor(diff / (1000 * 60 * 60))
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
         const seconds = Math.floor((diff % (1000 * 60)) / 1000)
 
-        setCountdown({ hours, minutes, seconds })
+        console.log('[Player] Countdown:', { totalHours, minutes, seconds, diff: diff / 1000 / 60 / 60 })
+        setCountdown({ hours: totalHours, minutes, seconds })
         setStreamStatus('countdown')
       }
 

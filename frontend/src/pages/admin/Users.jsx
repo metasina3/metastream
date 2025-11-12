@@ -132,7 +132,7 @@ export default function AdminUsers() {
           </thead>
           <tbody>
             {users.map((user) => (
-              <tr key={user.id} className="border-b hover:bg-gray-50">
+              <tr key={user.id} className="border-b border-border hover:bg-bg-glass transition-colors">
                 <td className="p-4">{user.name || 'بدون نام'}</td>
                 <td className="p-4">{user.phone}</td>
                 <td className="p-4">{user.email || '-'}</td>
