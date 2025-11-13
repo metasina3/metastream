@@ -11,7 +11,7 @@ from app.core.database import Base, engine, SessionLocal
 from app.core.security import hash_password
 from app.models import User
 from sqlalchemy.exc import IntegrityError
-from app.routers import auth, admin, dashboard, api, player, moderation, approvals, analytics
+from app.routers import auth, admin, dashboard, api, player, moderation, approvals, analytics, telegram
 try:
     from app.routers import websocket
 except ImportError:
@@ -45,6 +45,7 @@ app.include_router(player.router)
 app.include_router(moderation.router)
 app.include_router(approvals.router)
 app.include_router(analytics.router)
+app.include_router(telegram.router)
 if websocket:
     app.include_router(websocket.router)
 

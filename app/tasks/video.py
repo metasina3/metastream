@@ -171,7 +171,15 @@ def prepare_video(video_id: int):
                 )
                 db.add(a)
                 db.commit()
+                db.refresh(a)
                 print(f"[VIDEO] Approval request created")
+                
+                # Send Telegram notification
+                try:
+                    from app.utils.telegram import send_approval_notification
+                    send_approval_notification(a.id, "video", video.id, db)
+                except Exception as e:
+                    print(f"[VIDEO] Telegram notification error: {e}")
             except Exception:
                 db.rollback()
         

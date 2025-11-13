@@ -536,6 +536,14 @@ async def create_channel(
         a = Approval(type="channel", entity_id=channel.id, user_id=user.id, status="pending")
         db.add(a)
         db.commit()
+        db.refresh(a)
+        
+        # Send Telegram notification
+        try:
+            from app.utils.telegram import send_approval_notification
+            send_approval_notification(a.id, "channel", channel.id, db)
+        except Exception as e:
+            print(f"[CHANNEL] Telegram notification error: {e}")
     except Exception:
         db.rollback()
     
