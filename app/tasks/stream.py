@@ -6,11 +6,14 @@ from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
 from app.models import StreamSchedule, Channel, Video
 from app.utils.datetime_utils import now_tehran, to_tehran
+from app.utils.ffmpeg import get_video_duration
 from datetime import timedelta
 import subprocess
 import os
 import signal
 import time
+import logging
+from logging.handlers import RotatingFileHandler
 
 @shared_task(queue='stream')
 def check_and_start_streams():
@@ -54,22 +57,65 @@ def check_and_start_streams():
         db.close()
 
 
-@shared_task(queue='stream')
-def start_stream_task(stream_id: int):
+def _setup_stream_logger(stream_id: int):
     """
-    Start a specific stream by streaming the video to RTMP.
+    Setup a dedicated logger for a specific stream.
+    Creates log file at logs/streams/stream_{stream_id}.log
     """
+    # Create logs directory if it doesn't exist
+    logs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "logs", "streams")
+    os.makedirs(logs_dir, exist_ok=True)
+    
+    # Create logger
+    logger_name = f"aparat_stream_{stream_id}"
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.INFO)
+    
+    # Remove existing handlers to avoid duplicates
+    logger.handlers = []
+    
+    # Create file handler
+    log_file = os.path.join(logs_dir, f"stream_{stream_id}.log")
+    file_handler = RotatingFileHandler(
+        log_file,
+        maxBytes=10 * 1024 * 1024,  # 10MB
+        backupCount=5
+    )
+    file_handler.setLevel(logging.INFO)
+    
+    # Create formatter
+    formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    file_handler.setFormatter(formatter)
+    
+    logger.addHandler(file_handler)
+    
+    return logger
+
+
+@shared_task(bind=True, queue='stream')
+def start_stream_task(self, stream_id: int):
+    """
+    Start a specific stream by streaming the video to RTMP with resume capability.
+    This task will automatically retry from the last position if RTMP connection is lost.
+    """
+    # Setup logger for this stream
+    logger = _setup_stream_logger(stream_id)
+    task_id = self.request.id if hasattr(self, 'request') else None
+    
     db: Session = SessionLocal()
     stream = None
     try:
         stream = db.query(StreamSchedule).filter(StreamSchedule.id == stream_id).first()
         if not stream:
-            print(f"[STREAM] Stream {stream_id} not found")
+            logger.error(f"Stream {stream_id} not found (task_id: {task_id})")
             return {"success": False, "error": "Stream not found"}
         
         # Only start if still scheduled (double-check to avoid race conditions)
         if stream.status != "scheduled":
-            print(f"[STREAM] Stream {stream_id} is not scheduled (status: {stream.status}) - skipping")
+            logger.warning(f"Stream {stream_id} is not scheduled (status: {stream.status}) - skipping (task_id: {task_id})")
             return {"success": False, "error": f"Stream status is {stream.status}"}
         
         # Verify start time hasn't expired too long ago (more than 10 minutes = cancel)
@@ -77,7 +123,7 @@ def start_stream_task(stream_id: int):
         now_check = now_tehran()
         time_passed = (now_check - stream_start).total_seconds()
         if time_passed > 600:  # 10 minutes
-            print(f"[STREAM] Stream {stream_id} start time expired too long ago ({stream_start}, {time_passed:.0f}s ago) - cancelling")
+            logger.warning(f"Stream {stream_id} start time expired too long ago ({stream_start}, {time_passed:.0f}s ago) - cancelling (task_id: {task_id})")
             stream.status = "cancelled"
             db.commit()
             return {"success": False, "error": "Stream start time expired too long ago"}
@@ -87,7 +133,7 @@ def start_stream_task(stream_id: int):
         if not channel or not channel.rtmp_url or not channel.rtmp_key:
             stream.status = "cancelled"
             db.commit()
-            print(f"[STREAM] Channel {stream.channel_id} missing RTMP config")
+            logger.error(f"Channel {stream.channel_id} missing RTMP config (task_id: {task_id})")
             return {"success": False, "error": "Channel RTMP config missing"}
         
         # Get video
@@ -95,7 +141,7 @@ def start_stream_task(stream_id: int):
         if not video or video.status != "ready":
             stream.status = "cancelled"
             db.commit()
-            print(f"[STREAM] Video {stream.video_id} not ready")
+            logger.error(f"Video {stream.video_id} not ready (task_id: {task_id})")
             return {"success": False, "error": "Video not ready"}
         
         # Use processed file if available, otherwise original
@@ -103,21 +149,38 @@ def start_stream_task(stream_id: int):
         if not video_file or not os.path.exists(video_file):
             stream.status = "cancelled"
             db.commit()
-            print(f"[STREAM] Video file not found: {video_file}")
+            logger.error(f"Video file not found: {video_file} (task_id: {task_id})")
             return {"success": False, "error": "Video file not found"}
         
         # Build RTMP URL
         rtmp_destination = f"{channel.rtmp_url}/{channel.rtmp_key}" if not channel.rtmp_url.endswith('/') else f"{channel.rtmp_url}{channel.rtmp_key}"
+        
+        # Mask stream key for logging (show only last 4 chars)
+        stream_key_masked = channel.rtmp_key[:4] + "****" if len(channel.rtmp_key) > 4 else "****"
+        
+        # Get video duration
+        video_duration = get_video_duration(video_file)
+        if video_duration <= 0:
+            logger.error(f"Could not get video duration for {video_file} (task_id: {task_id})")
+            stream.status = "cancelled"
+            db.commit()
+            return {"success": False, "error": "Could not determine video duration"}
         
         # Update status to live
         stream.status = "live"
         stream.started_at = now_tehran()
         db.commit()
         
-        print(f"[STREAM] Starting RTMP stream: {video_file} -> {rtmp_destination}")
+        # Log stream start
+        logger.info(f"=== STREAM START ===")
+        logger.info(f"Stream ID: {stream_id}")
+        logger.info(f"Task ID: {task_id}")
+        logger.info(f"Video file: {video_file}")
+        logger.info(f"RTMP destination: {channel.rtmp_url}/{stream_key_masked}")
+        logger.info(f"Video duration: {video_duration:.2f} seconds")
+        logger.info(f"Initial offset: 0.00 seconds")
         
         # Find FFmpeg binary (try multiple common paths)
-        # First try to use which/whereis, then try common paths
         ffmpeg_bin = None
         
         # Try using 'which' command first
@@ -125,7 +188,6 @@ def start_stream_task(stream_id: int):
             result = subprocess.run(["which", "ffmpeg"], capture_output=True, timeout=1, text=True)
             if result.returncode == 0 and result.stdout.strip():
                 candidate = result.stdout.strip()
-                # Verify it works
                 test_result = subprocess.run([candidate, "-version"], capture_output=True, timeout=2)
                 if test_result.returncode == 0:
                     ffmpeg_bin = candidate
@@ -137,7 +199,6 @@ def start_stream_task(stream_id: int):
             ffmpeg_paths = ["/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg", "ffmpeg"]
             for path in ffmpeg_paths:
                 if path == "ffmpeg":
-                    # Try to execute directly
                     try:
                         result = subprocess.run([path, "-version"], capture_output=True, timeout=2)
                         if result.returncode == 0:
@@ -155,125 +216,285 @@ def start_stream_task(stream_id: int):
                         continue
         
         if not ffmpeg_bin:
-            # Final attempt: try to install FFmpeg via apt-get (if we have root)
-            try:
-                print("[STREAM] FFmpeg not found, attempting to install...")
-                install_result = subprocess.run(
-                    ["apt-get", "update"],
-                    capture_output=True,
-                    timeout=30
-                )
-                if install_result.returncode == 0:
-                    install_result = subprocess.run(
-                        ["apt-get", "install", "-y", "--no-install-recommends", "ffmpeg"],
-                        capture_output=True,
-                        timeout=60
-                    )
-                    if install_result.returncode == 0:
-                        # Try again after installation
-                        result = subprocess.run(["which", "ffmpeg"], capture_output=True, timeout=2, text=True)
-                        if result.returncode == 0:
-                            ffmpeg_bin = result.stdout.strip()
-            except Exception as install_error:
-                print(f"[STREAM] Failed to auto-install FFmpeg: {install_error}")
-        
-        if not ffmpeg_bin:
             raise Exception("FFmpeg not found. Please install FFmpeg in the container: apt-get update && apt-get install -y ffmpeg")
         
-        # Start FFmpeg RTMP streaming in background
-        # Video is already prepared for RTMP, so we just copy streams without re-encoding
-        ffmpeg_cmd = [
-            ffmpeg_bin,
-            "-re",  # Read input at native frame rate (important for live streaming)
-            "-i", video_file,
-            "-c:v", "copy",  # Copy video stream (no re-encoding)
-            "-c:a", "copy",  # Copy audio stream (no re-encoding)
-            "-f", "flv",
-            "-rtmp_live", "live",
-            rtmp_destination
-        ]
-        
-        # Add proxy configuration if set
-        # FFmpeg uses environment variables for proxy (http_proxy, https_proxy, HTTP_PROXY, HTTPS_PROXY)
-        env = os.environ.copy()
-        from app.core.config import settings
-        # Check if proxy is set and not empty
-        if settings.STREAM_PROXY and settings.STREAM_PROXY.strip():
-            proxy_url = settings.STREAM_PROXY.strip()
-            if proxy_url:
-                # If proxy is on host machine (127.0.0.1 or localhost), use host.docker.internal
-                # This allows container to access services on host
-                if proxy_url.startswith("http://127.0.0.1") or proxy_url.startswith("http://localhost"):
-                    # Replace 127.0.0.1 or localhost with host.docker.internal
-                    proxy_url = proxy_url.replace("127.0.0.1", "host.docker.internal").replace("localhost", "host.docker.internal")
-                    print(f"[STREAM] 🔄 Proxy URL adjusted for Docker container: {proxy_url}")
-                
-                print(f"[STREAM] ✅ PROXY CONFIGURED: Using proxy for streaming: {proxy_url}")
-                print(f"[STREAM] Setting http_proxy and https_proxy environment variables for FFmpeg")
-                # Set proxy environment variables for FFmpeg
-                env["http_proxy"] = proxy_url
-                env["https_proxy"] = proxy_url
-                env["HTTP_PROXY"] = proxy_url
-                env["HTTPS_PROXY"] = proxy_url
-                print(f"[STREAM] Environment variables set: http_proxy={proxy_url}, https_proxy={proxy_url}")
-            else:
-                print(f"[STREAM] ⚠️ STREAM_PROXY is set but empty, streaming without proxy")
-        else:
-            print(f"[STREAM] ℹ️ STREAM_PROXY not set, streaming without proxy")
-        
-        # Start FFmpeg process in background with environment variables
-        # Use start_new_session=True instead of preexec_fn for better compatibility
-        try:
-            process = subprocess.Popen(
-                ffmpeg_cmd,
-                stdout=subprocess.DEVNULL,  # Redirect to /dev/null to avoid filling logs
-                stderr=subprocess.DEVNULL,
-                env=env,  # Pass environment variables including proxy
-                start_new_session=True  # Create new process group
-            )
-        except AttributeError:
-            # Fallback for older Python versions
-            process = subprocess.Popen(
-                ffmpeg_cmd,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                env=env,  # Pass environment variables including proxy
-                preexec_fn=os.setsid if hasattr(os, 'setsid') else None
-            )
-        
-        print(f"[STREAM] FFmpeg started with PID {process.pid} for stream {stream_id}")
-        if settings.STREAM_PROXY and settings.STREAM_PROXY.strip():
-            print(f"[STREAM] ✅ FFmpeg is using proxy: {proxy_url}")
-            print(f"[STREAM] Environment variables passed to FFmpeg:")
-            print(f"[STREAM]   - http_proxy={env.get('http_proxy')}")
-            print(f"[STREAM]   - https_proxy={env.get('https_proxy')}")
-            print(f"[STREAM]   - HTTP_PROXY={env.get('HTTP_PROXY')}")
-            print(f"[STREAM]   - HTTPS_PROXY={env.get('HTTPS_PROXY')}")
-        else:
-            print(f"[STREAM] ⚠️ FFmpeg is NOT using proxy (STREAM_PROXY not set)")
+        # Resume mechanism: track offset and retry on failure
+        offset_seconds = 0.0
+        attempt = 0
+        total_attempts = 0
+        max_retry_delay = 30  # Maximum seconds to wait before retry
         
         # Store PID in Redis for later cleanup/kill
-        try:
-            import redis
-            redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
-            pid_key = f"stream:pid:{stream_id}"
-            redis_client.setex(pid_key, 3600 * 24, str(process.pid))  # Store for 24 hours
-            print(f"[STREAM] Stored PID {process.pid} in Redis with key: {pid_key}")
-        except Exception as redis_error:
-            print(f"[STREAM] Warning: Could not store PID in Redis: {redis_error}")
+        import redis
+        redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
+        pid_key = f"stream:pid:{stream_id}"
         
-        return {"success": True, "stream_id": stream_id, "pid": process.pid}
+        while offset_seconds < video_duration:
+            attempt += 1
+            total_attempts += 1
+            
+            # Check if stream was cancelled
+            db.refresh(stream)
+            if stream.status != "live":
+                logger.info(f"Stream {stream_id} status changed to {stream.status}, stopping (task_id: {task_id})")
+                break
+            
+            # Log attempt start
+            logger.info(f"--- ATTEMPT #{attempt} ---")
+            logger.info(f"Offset: {offset_seconds:.2f} seconds ({offset_seconds/video_duration*100:.1f}% of video)")
+            logger.info(f"Remaining: {video_duration - offset_seconds:.2f} seconds")
+            
+            # Build FFmpeg command with resume support
+            ffmpeg_cmd = [
+                ffmpeg_bin,
+                "-re",  # Read input at native frame rate
+                "-ss", str(offset_seconds),  # Seek to offset position
+                "-i", video_file,
+                "-c:v", "copy",  # Copy video stream (no re-encoding)
+                "-c:a", "copy",  # Copy audio stream (no re-encoding)
+                "-f", "flv",
+                "-rtmp_live", "live",
+                "-rw_timeout", "5000000",  # 5 seconds timeout for RTMP write operations (in microseconds)
+                rtmp_destination
+            ]
+            
+            # Log command (masked)
+            cmd_str = " ".join(ffmpeg_cmd)
+            cmd_str_masked = cmd_str.replace(channel.rtmp_key, stream_key_masked)
+            logger.info(f"FFmpeg command: {cmd_str_masked}")
+            
+            # Record start time
+            start_ts = time.time()
+            
+            # Start FFmpeg process
+            try:
+                process = subprocess.Popen(
+                    ffmpeg_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    start_new_session=True
+                )
+            except AttributeError:
+                process = subprocess.Popen(
+                    ffmpeg_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    preexec_fn=os.setsid if hasattr(os, 'setsid') else None
+                )
+            
+            logger.info(f"FFmpeg started with PID {process.pid}")
+            
+            # Store PID in Redis
+            try:
+                redis_client.setex(pid_key, 3600 * 24, str(process.pid))
+            except Exception as redis_error:
+                logger.warning(f"Could not store PID in Redis: {redis_error}")
+            
+            # Wait for process to complete with timeout monitoring
+            # Use polling instead of communicate() to detect stuck/stopped processes
+            try:
+                import threading
+                import queue
+                
+                # Collect stderr in background with timeout
+                stderr_queue = queue.Queue()
+                stderr_data = []
+                
+                def read_stderr():
+                    try:
+                        while True:
+                            try:
+                                chunk = process.stderr.read(1024)
+                                if not chunk:
+                                    break
+                                stderr_queue.put(chunk)
+                            except:
+                                break
+                    except:
+                        pass
+                    finally:
+                        stderr_queue.put(None)  # Signal end
+                
+                stderr_thread = threading.Thread(target=read_stderr, daemon=True)
+                stderr_thread.start()
+                
+                # Poll process with timeout detection
+                process_start_time = time.time()
+                max_idle_time = 20  # If process runs for more than expected without output, consider it stuck
+                check_interval = 2  # Check every 2 seconds
+                last_stderr_time = time.time()
+                
+                while process.poll() is None:
+                    current_time = time.time()
+                    elapsed = current_time - process_start_time
+                    
+                    # Check if stream was cancelled
+                    db.refresh(stream)
+                    if stream.status != "live":
+                        logger.info(f"Stream {stream_id} status changed to {stream.status}, terminating FFmpeg")
+                        process.terminate()
+                        try:
+                            process.wait(timeout=5)
+                        except:
+                            process.kill()
+                        break
+                    
+                    # Collect stderr chunks (non-blocking)
+                    try:
+                        while True:
+                            chunk = stderr_queue.get_nowait()
+                            if chunk is None:
+                                break
+                            stderr_data.append(chunk)
+                            last_stderr_time = current_time
+                    except queue.Empty:
+                        pass
+                    
+                    # Check for stuck process
+                    # Only kill if process is actually stopped (SIGSTOP) or truly stuck
+                    # Don't rely on stderr alone - FFmpeg may not output much during normal streaming
+                    try:
+                        import psutil
+                        proc = psutil.Process(process.pid)
+                        status = proc.status()
+                        
+                        # Only kill if process is explicitly stopped (SIGSTOP)
+                        # This is the main case we want to handle
+                        if status == psutil.STATUS_STOPPED:
+                            logger.warning(f"FFmpeg process is stopped (SIGSTOP detected, status: {status}), killing and retrying")
+                            process.terminate()
+                            try:
+                                process.wait(timeout=5)
+                            except:
+                                process.kill()
+                            exit_code = -1
+                            break
+                        
+                        # For other cases, be very conservative
+                        # Only kill if process is zombie or truly dead
+                        if status == psutil.STATUS_ZOMBIE:
+                            logger.warning(f"FFmpeg process is zombie, killing and retrying")
+                            process.terminate()
+                            try:
+                                process.wait(timeout=5)
+                            except:
+                                process.kill()
+                            exit_code = -1
+                            break
+                            
+                    except (ImportError, psutil.NoSuchProcess, psutil.AccessDenied) as e:
+                        # If psutil fails, don't kill - just log
+                        # We don't want to kill healthy processes
+                        if isinstance(e, psutil.NoSuchProcess):
+                            # Process already dead
+                            break
+                        # For other errors, continue - don't kill
+                        pass
+                    
+                    time.sleep(check_interval)
+                
+                # Process has exited or was killed
+                exit_code = process.returncode
+                end_ts = time.time()
+                run_duration = end_ts - start_ts
+                
+                # Collect remaining stderr
+                try:
+                    while True:
+                        chunk = stderr_queue.get_nowait()
+                        if chunk is None:
+                            break
+                        stderr_data.append(chunk)
+                except queue.Empty:
+                    pass
+                
+                stderr_str = b''.join(stderr_data).decode('utf-8', errors='ignore') if stderr_data else ""
+                
+                # Update offset based on actual run time
+                # Since we're using -re (realtime), the time elapsed should match the video time played
+                offset_seconds += run_duration
+                
+                logger.info(f"FFmpeg exited with code {exit_code}")
+                logger.info(f"Run duration: {run_duration:.2f} seconds")
+                logger.info(f"New offset: {offset_seconds:.2f} seconds")
+                
+                # Check if we've completed the video
+                if offset_seconds >= video_duration:
+                    logger.info(f"=== STREAM COMPLETED SUCCESSFULLY ===")
+                    logger.info(f"Total duration: {video_duration:.2f} seconds")
+                    logger.info(f"Total attempts: {total_attempts}")
+                    stream.status = "ended"
+                    stream.ended_at = now_tehran()
+                    db.commit()
+                    redis_client.delete(pid_key)
+                    return {"success": True, "stream_id": stream_id, "completed": True, "total_attempts": total_attempts}
+                
+                # If exit code is 0, stream completed normally (shouldn't happen if offset < duration)
+                if exit_code == 0:
+                    logger.info(f"FFmpeg exited normally, but offset ({offset_seconds:.2f}) < duration ({video_duration:.2f})")
+                    logger.info("This may indicate the video ended prematurely or there was an issue")
+                    # Continue to next attempt
+                
+                # If exit code is non-zero or process was killed, log error and retry
+                if exit_code != 0:
+                    logger.error(f"FFmpeg failed with exit code {exit_code}")
+                    if stderr_str:
+                        logger.error(f"Stderr: {stderr_str[:500]}")  # Log first 500 chars
+                    
+                    # Check for specific error patterns
+                    if stderr_str:
+                        error_lower = stderr_str.lower()
+                        if any(keyword in error_lower for keyword in ['broken pipe', 'connection reset', 'connection refused', 'timeout', 'network', 'rtmp']):
+                            logger.error(f"Network/RTMP error detected: {stderr_str[:200]}")
+                        else:
+                            logger.error(f"Unknown error: {stderr_str[:200]}")
+                    else:
+                        logger.error("No stderr output (process may have been killed or stopped)")
+                    
+                    # Wait before retry (exponential backoff, max 30 seconds)
+                    retry_delay = min(2 ** min(attempt - 1, 4), max_retry_delay)
+                    logger.info(f"Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                    continue
+                
+            except Exception as e:
+                logger.exception(f"Exception while running FFmpeg (attempt #{attempt}): {e}")
+                # Try to kill the process if it's still running
+                try:
+                    if process.poll() is None:
+                        process.terminate()
+                        process.wait(timeout=5)
+                except:
+                    try:
+                        process.kill()
+                    except:
+                        pass
+                
+                # Wait before retry
+                retry_delay = min(2 ** min(attempt - 1, 4), max_retry_delay)
+                logger.info(f"Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                continue
+        
+        # If we exit the loop without completing
+        logger.warning(f"Stream {stream_id} ended without completing (offset: {offset_seconds:.2f}, duration: {video_duration:.2f})")
+        stream.status = "ended"
+        stream.ended_at = now_tehran()
+        db.commit()
+        redis_client.delete(pid_key)
+        
+        return {"success": True, "stream_id": stream_id, "completed": False, "total_attempts": total_attempts}
         
     except Exception as e:
         error_msg = str(e)
-        print(f"[STREAM] Error starting stream {stream_id}: {error_msg}")
+        logger.exception(f"Error starting stream {stream_id} (task_id: {task_id}): {error_msg}")
         if stream:
             try:
                 stream.status = "cancelled"
-                stream.error_message = error_msg  # Store error message
+                stream.error_message = error_msg
                 db.commit()
             except Exception as db_error:
-                print(f"[STREAM] Error updating stream status: {db_error}")
+                logger.exception(f"Error updating stream status: {db_error}")
         return {"success": False, "error": error_msg}
     finally:
         db.close()

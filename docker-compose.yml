@@ -130,6 +130,7 @@ services:
       - ./app:/app/app:ro  # Code mounted as read-only
       - ./data/media:/app/media  # Media files outside container (separate path)
       - ./data/uploads:/app/uploads  # Upload directory (separate path)
+      - ./logs:/app/logs  # Stream logs directory (mounted for access from host)
     depends_on:
       db:
         condition: service_healthy

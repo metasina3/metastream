@@ -45,6 +45,9 @@ python-telegram-bot==21.6
 # Flower (Celery Monitoring)
 flower==2.0.1
 
+# Process monitoring
+psutil==5.9.8
+
 # Testing
 pytest==8.3.3
 pytest-asyncio==0.24.0
