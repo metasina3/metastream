@@ -19,23 +19,40 @@ ENV HTTP_PROXY=${HTTP_PROXY} \
 
 # Install dependencies including FFmpeg
 # Use proxy if available, otherwise use direct connection
-# Configure apt proxy if HTTP_PROXY is set
+# Configure apt proxy if HTTP_PROXY is set, but fallback to direct if proxy fails or times out
 RUN if [ -n "$HTTP_PROXY" ]; then \
         echo "Acquire::http::Proxy \"$HTTP_PROXY\";" > /etc/apt/apt.conf.d/proxy.conf; \
         echo "Acquire::https::Proxy \"$HTTP_PROXY\";" >> /etc/apt/apt.conf.d/proxy.conf; \
+        echo "Acquire::http::Timeout \"10\";" >> /etc/apt/apt.conf.d/proxy.conf; \
+        echo "Acquire::https::Timeout \"10\";" >> /etc/apt/apt.conf.d/proxy.conf; \
         echo "Configured apt proxy: $HTTP_PROXY"; \
+        (timeout 60 apt-get update && timeout 300 apt-get install -y --no-install-recommends \
+        libpq-dev \
+        ffmpeg \
+        && rm -rf /var/lib/apt/lists/*) || \
+        (echo "Proxy failed or timed out, trying without proxy..." && \
+         rm -f /etc/apt/apt.conf.d/proxy.conf && \
+         apt-get update && apt-get install -y --no-install-recommends \
+         libpq-dev \
+         ffmpeg \
+         && rm -rf /var/lib/apt/lists/*); \
+    else \
+        apt-get update && apt-get install -y --no-install-recommends \
+        libpq-dev \
+        ffmpeg \
+        && rm -rf /var/lib/apt/lists/*; \
     fi && \
-    apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -f /etc/apt/apt.conf.d/proxy.conf
+    rm -f /etc/apt/apt.conf.d/proxy.conf
 
 WORKDIR /app
 
 # Copy requirements and install
+# Try with proxy first, fallback to direct connection if proxy fails or times out
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN (timeout 600 pip install --no-cache-dir -r requirements.txt) || \
+    (echo "Proxy failed or timed out for pip, trying without proxy..." && \
+     unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy && \
+     pip install --no-cache-dir -r requirements.txt)
 
 # Copy application code
 COPY app ./app

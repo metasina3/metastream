@@ -30,6 +30,7 @@ def get_proxy_config() -> Optional[dict]:
 def send_message(chat_id: str, message: str, reply_markup: Optional[dict] = None) -> dict:
     """
     Send message to Telegram
+    Tries with proxy first, falls back to direct connection if proxy fails
     """
     if not settings.TELEGRAM_ENABLED or not settings.TELEGRAM_BOT_TOKEN:
         return {"success": False, "error": "Telegram disabled"}
@@ -45,37 +46,59 @@ def send_message(chat_id: str, message: str, reply_markup: Optional[dict] = None
     if reply_markup:
         data["reply_markup"] = reply_markup
     
+    # Try with proxy first
+    proxies = get_proxy_config()
     try:
-        proxies = get_proxy_config()
         response = requests.post(url, json=data, proxies=proxies, timeout=30)
         response.raise_for_status()
-        
         return {"success": True, "message_id": response.json().get("result", {}).get("message_id")}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+    except Exception as proxy_error:
+        # If proxy fails, try without proxy
+        if proxies:
+            try:
+                response = requests.post(url, json=data, proxies=None, timeout=30)
+                response.raise_for_status()
+                return {"success": True, "message_id": response.json().get("result", {}).get("message_id")}
+            except Exception as direct_error:
+                return {"success": False, "error": f"Proxy failed: {proxy_error}, Direct failed: {direct_error}"}
+        else:
+            return {"success": False, "error": str(proxy_error)}
 
 
 def send_file_to_telegram(file_path: str, chat_id: str) -> dict:
     """
     Send file to Telegram
+    Tries with proxy first, falls back to direct connection if proxy fails
     """
     if not settings.TELEGRAM_ENABLED or not settings.TELEGRAM_BOT_TOKEN:
         return {"success": False, "error": "Telegram disabled"}
     
     url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendDocument"
     
+    proxies = get_proxy_config()
+    
+    # Try with proxy first
     try:
-        proxies = get_proxy_config()
-        
         with open(file_path, "rb") as f:
             files = {"document": f}
             data = {"chat_id": chat_id}
             response = requests.post(url, files=files, data=data, proxies=proxies, timeout=60)
             response.raise_for_status()
-        
         return {"success": True}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+    except Exception as proxy_error:
+        # If proxy fails, try without proxy
+        if proxies:
+            try:
+                with open(file_path, "rb") as f:
+                    files = {"document": f}
+                    data = {"chat_id": chat_id}
+                    response = requests.post(url, files=files, data=data, proxies=None, timeout=60)
+                    response.raise_for_status()
+                return {"success": True}
+            except Exception as direct_error:
+                return {"success": False, "error": f"Proxy failed: {proxy_error}, Direct failed: {direct_error}"}
+        else:
+            return {"success": False, "error": str(proxy_error)}
 
 
 def send_approval_notification(approval_id: int, approval_type: str, entity_id: int, db: Session, user_name: Optional[str] = None) -> dict:

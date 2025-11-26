@@ -41,8 +41,21 @@ def main():
         if settings.TELEGRAM_PROXY_HTTP:
             proxies = {"http": settings.TELEGRAM_PROXY_HTTP, "https": settings.TELEGRAM_PROXY_HTTP}
         
-        response = requests.post(url, json=data, proxies=proxies, timeout=10)
-        response.raise_for_status()
+        try:
+            response = requests.post(url, json=data, proxies=proxies, timeout=10)
+            response.raise_for_status()
+        except Exception as proxy_error:
+            # Try without proxy if proxy fails
+            if proxies:
+                print(f"⚠️ Proxy failed, trying without proxy...")
+                try:
+                    response = requests.post(url, json=data, proxies=None, timeout=10)
+                    response.raise_for_status()
+                except Exception as direct_error:
+                    print(f"❌ Error setting webhook: Proxy failed: {proxy_error}, Direct failed: {direct_error}")
+                    return 1
+            else:
+                raise
         
         result = response.json()
         if result.get("ok"):
@@ -78,8 +91,20 @@ def main():
                 }
                 
                 try:
-                    send_response = requests.post(send_url, json=send_data, proxies=proxies, timeout=10)
-                    send_response.raise_for_status()
+                    try:
+                        send_response = requests.post(send_url, json=send_data, proxies=proxies, timeout=10)
+                        send_response.raise_for_status()
+                    except Exception as proxy_error:
+                        # Try without proxy if proxy fails
+                        if proxies:
+                            try:
+                                send_response = requests.post(send_url, json=send_data, proxies=None, timeout=10)
+                                send_response.raise_for_status()
+                            except Exception as direct_error:
+                                print(f"❌ Failed to send message to {chat_id.strip()}: Proxy failed: {proxy_error}, Direct failed: {direct_error}")
+                                continue
+                        else:
+                            raise
                     print(f"✅ Test message sent to {chat_id.strip()}")
                     success_count += 1
                 except Exception as e:

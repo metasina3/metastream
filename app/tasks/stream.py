@@ -382,13 +382,19 @@ def start_stream_task(self, stream_id: int):
                             exit_code = -1
                             break
                             
-                    except (ImportError, psutil.NoSuchProcess, psutil.AccessDenied) as e:
+                    except ImportError:
+                        # psutil not installed - skip process status check
+                        logger.debug("psutil not available, skipping process status check")
+                        pass
+                    except Exception as e:
+                        # Handle psutil.NoSuchProcess, psutil.AccessDenied, etc.
                         # If psutil fails, don't kill - just log
                         # We don't want to kill healthy processes
-                        if isinstance(e, psutil.NoSuchProcess):
+                        if "NoSuchProcess" in str(type(e).__name__):
                             # Process already dead
                             break
                         # For other errors, continue - don't kill
+                        logger.debug(f"psutil check failed: {e}")
                         pass
                     
                     time.sleep(check_interval)

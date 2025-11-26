@@ -887,44 +887,44 @@ async def upload_video_chunk(
         else:
             # Sequential mode (backward compatibility)
             tmp_path = os.path.join(chunk_dir, upload_id + '.part')
-            current_size = os.path.getsize(tmp_path) if os.path.exists(tmp_path) else 0
+        current_size = os.path.getsize(tmp_path) if os.path.exists(tmp_path) else 0
             
-            if start != current_size:
-                return {"success": False, "received": current_size, "detail": "Offset mismatch"}
+        if start != current_size:
+            return {"success": False, "received": current_size, "detail": "Offset mismatch"}
             
-            os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-            body = await request.body()
+        os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+        body = await request.body()
             
-            with open(tmp_path, 'ab') as f:
-                f.write(body)
+        with open(tmp_path, 'ab') as f:
+            f.write(body)
             
-            current_size = os.path.getsize(tmp_path)
-            completed = current_size >= total
+        current_size = os.path.getsize(tmp_path)
+        completed = current_size >= total
             
-            if completed:
-                ext = file_name.split('.')[-1] if '.' in file_name else 'bin'
-                final_name = f"{uuid.uuid4()}.{ext}"
-                final_path = os.path.join(settings.UPLOAD_DIR, final_name)
-                os.replace(tmp_path, final_path)
+        if completed:
+            ext = file_name.split('.')[-1] if '.' in file_name else 'bin'
+            final_name = f"{uuid.uuid4()}.{ext}"
+            final_path = os.path.join(settings.UPLOAD_DIR, final_name)
+            os.replace(tmp_path, final_path)
                 
-                video = Video(
-                    user_id=user.id,
+            video = Video(
+                user_id=user.id,
                     title=title if title else file_name,
-                    original_file=final_path,
-                    status="pending",
-                    file_size=total
-                )
-                db.add(video)
-                db.commit()
-                db.refresh(video)
-                try:
-                    from app.tasks.video import prepare_video
-                    prepare_video.delay(video.id)
-                except Exception:
-                    pass
-                return {"success": True, "completed": True, "video_id": video.id}
+                original_file=final_path,
+                status="pending",
+                file_size=total
+            )
+            db.add(video)
+            db.commit()
+            db.refresh(video)
+            try:
+                from app.tasks.video import prepare_video
+                prepare_video.delay(video.id)
+            except Exception:
+                pass
+            return {"success": True, "completed": True, "video_id": video.id}
             
-            return {"success": True, "completed": False, "received": current_size}
+        return {"success": True, "completed": False, "received": current_size}
             
     except HTTPException:
         raise

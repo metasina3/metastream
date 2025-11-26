@@ -73,8 +73,19 @@ async def init_telegram():
         }
         
         proxies = get_proxy_config()
-        response = requests.post(url, json=data, proxies=proxies, timeout=10)
-        response.raise_for_status()
+        try:
+            response = requests.post(url, json=data, proxies=proxies, timeout=10)
+            response.raise_for_status()
+        except Exception as proxy_error:
+            # Try without proxy if proxy fails
+            if proxies:
+                try:
+                    response = requests.post(url, json=data, proxies=None, timeout=10)
+                    response.raise_for_status()
+                except Exception as direct_error:
+                    raise Exception(f"Proxy failed: {proxy_error}, Direct failed: {direct_error}")
+            else:
+                raise
         
         webhook_result = response.json()
         results["webhook"] = {
@@ -152,8 +163,19 @@ async def set_webhook(request: Request):
         }
         
         proxies = get_proxy_config()
-        response = requests.post(url, json=data, proxies=proxies, timeout=10)
-        response.raise_for_status()
+        try:
+            response = requests.post(url, json=data, proxies=proxies, timeout=10)
+            response.raise_for_status()
+        except Exception as proxy_error:
+            # Try without proxy if proxy fails
+            if proxies:
+                try:
+                    response = requests.post(url, json=data, proxies=None, timeout=10)
+                    response.raise_for_status()
+                except Exception as direct_error:
+                    raise HTTPException(status_code=500, detail=f"Proxy failed: {proxy_error}, Direct failed: {direct_error}")
+            else:
+                raise
         
         return {"success": True, "result": response.json()}
     except Exception as e:
@@ -379,7 +401,17 @@ async def answer_callback_query(callback_query_id: str, text: str, show_alert: b
     
     try:
         proxies = get_proxy_config()
-        requests.post(url, json=data, proxies=proxies, timeout=5)
+        try:
+            requests.post(url, json=data, proxies=proxies, timeout=5)
+        except Exception as proxy_error:
+            # Try without proxy if proxy fails
+            if proxies:
+                try:
+                    requests.post(url, json=data, proxies=None, timeout=5)
+                except Exception as direct_error:
+                    print(f"[TELEGRAM] Answer callback error: Proxy failed: {proxy_error}, Direct failed: {direct_error}")
+            else:
+                raise
     except Exception as e:
         print(f"[TELEGRAM] Answer callback error: {e}")
 
@@ -404,7 +436,17 @@ async def edit_message_text(chat_id: int, message_id: int, text: str):
     
     try:
         proxies = get_proxy_config()
-        requests.post(url, json=data, proxies=proxies, timeout=5)
+        try:
+            requests.post(url, json=data, proxies=proxies, timeout=5)
+        except Exception as proxy_error:
+            # Try without proxy if proxy fails
+            if proxies:
+                try:
+                    requests.post(url, json=data, proxies=None, timeout=5)
+                except Exception as direct_error:
+                    print(f"[TELEGRAM] Edit message error: Proxy failed: {proxy_error}, Direct failed: {direct_error}")
+            else:
+                raise
     except Exception as e:
         print(f"[TELEGRAM] Edit message error: {e}")
 
@@ -431,7 +473,17 @@ async def send_telegram_message(chat_id: int, text: str, reply_markup: Optional[
     
     try:
         proxies = get_proxy_config()
-        requests.post(url, json=data, proxies=proxies, timeout=10)
+        try:
+            requests.post(url, json=data, proxies=proxies, timeout=10)
+        except Exception as proxy_error:
+            # Try without proxy if proxy fails
+            if proxies:
+                try:
+                    requests.post(url, json=data, proxies=None, timeout=10)
+                except Exception as direct_error:
+                    print(f"[TELEGRAM] Send message error: Proxy failed: {proxy_error}, Direct failed: {direct_error}")
+            else:
+                raise
     except Exception as e:
         print(f"[TELEGRAM] Send message error: {e}")
 
