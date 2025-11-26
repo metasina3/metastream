@@ -171,7 +171,7 @@ export default function UserVideos() {
         if (abortController.signal.aborted || allChunksCompleted) {
           throw new Error('آپلود توسط کاربر لغو شد')
         }
-
+        
         // Skip if already received
         if (receivedChunks.has(chunkIndex)) {
           chunkProgress[chunkIndex] = 100
@@ -228,28 +228,28 @@ export default function UserVideos() {
           } else {
             // Use TCP (axios)
             uploadPromise = api.post('/api/dashboard/videos/upload-chunk', blob, {
-              headers: {
-                'Content-Type': 'application/octet-stream',
-                'Upload-Id': uploadId,
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'Upload-Id': uploadId,
                 'X-Chunk-Index': chunkIndex,
                 'X-Total-Chunks': totalChunks,
-                'X-File-Size': file.size,
-              },
-              params: { filename: file.name, title: title },
-              signal: abortController.signal,
+            'X-File-Size': file.size,
+          },
+          params: { filename: file.name, title: title },
+          signal: abortController.signal,
               timeout: 600000, // 10 minutes for slow networks
-            })
-          }
+        })
+        }
 
           const res = await uploadPromise
 
-          if (res.data?.completed) {
+        if (res.data?.completed) {
             // All chunks received and merged
             allChunksCompleted = true
-            setProgress(100)
-            await new Promise(resolve => setTimeout(resolve, 500))
-            await loadVideos()
-            setShowModal(false)
+          setProgress(100)
+          await new Promise(resolve => setTimeout(resolve, 500))
+          await loadVideos()
+          setShowModal(false)
             return true
           }
 
