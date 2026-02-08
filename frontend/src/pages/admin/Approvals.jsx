@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { approvalsAPI, api } from '../../utils/api'
+import api, { approvalsAPI } from '../../utils/api'
 
 export default function AdminApprovals() {
   const [items, setItems] = useState([])
@@ -204,5 +204,4 @@ export default function AdminApprovals() {
     </div>
   )
 }
-
 
